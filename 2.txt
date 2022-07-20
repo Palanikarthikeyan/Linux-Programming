@@ -1,0 +1,563 @@
+ Variables
+   |->1. User defined variable 
+   |->2. Shell variable (or) env (or) builtin variable 
+   |->3. Commandline args 
+   |->4. array
+
+ 1. User defined variable
+ ---------------------------
+ variableName=Value
+
+ read -p "Prompt message:" VariableName
+
+ 2. Shell variable (or) env (or) builtin variable
+ --------------------------------------------------
+ env {enter} 
+ pre-defined variables
+
+ recap 
+ ------
+ var=value
+ 
+ a=10
+ echo $a =>10
+ a=20 ->overwrite existing value 
+ echo $a =>20
+ echo $a =>20
+ 
+ 10:20:30:40:50:60....
+
+
+ a=10
+ a=$a:20
+ echo $a ->10:20		
+
+ a=$a:30
+   --
+    |
+   10:20
+ echo $a ->10:20:30
+ ...
+ ...
+ echo $PATH
+ PATH=$PATH:/root/Training/:/root/project/moduleA/temps/:
+ 
+ echo $PATH 
+ ------------------------------------------------------------------------
+ How to conver t user defined variable to shell variable?
+ 
+ export variable=Value
+    (or)
+  variable=value
+  export variable
+ -------------------------------------------------------------------------
+ Linux boot process
+ ------------------
+
+ Power ON PC ->POST ->MBR ->Bootloader ->Kernel -> Process(systemprocess)
+							|	
+							getty(?) - Login window
+							|
+							shell
+							|
+							User I/O (user process)
+
+  Login as:root		Login as:student
+  password:		password:
+            |			  |
+	 /etc/profile - read & execute this file
+	    |			  |
+  root@host~]# ls -a		student@host~]$ ls -a
+
+  .bashrc			.bashrc
+  .bash_history			.bash_history
+
+  root@host~]# vi .bashrc {enter}		student@host~]$ vi .bashrc{Enter}
+					
+  export PATH=$PATH:/root/Training		export port=9090
+  :wq						:wq
+	
+						student@host~]$ vi p1.sh{enter}
+						echo "App port number:$port"
+						:wq
+						student@host~]$ chmod a+x p1.sh
+						student@host~]$ ./p1.sh
+						App port number:9090
+--------------------------------------------------------------------------------
+
+ env 
+ echo $PATH
+ 
+ myapp='testApp'
+ echo $myapp -> testApp
+
+ sh{Enter}
+ echo $myapp
+ exit
+ 
+ export myapp
+ env|grep myapp
+ 
+ sh{enter}
+ echo $myapp
+ exit
+ |
+ Go to login path -> cd {Enter}
+ |
+ ls -a
+ |
+ .bashrc - update 
+ -------------------------------------------------------------------------
+ shell script supports arithmetic operations
+ 
+ 1. expr command
+ 2. compound statement
+
+ expr  Expression 
+       ----------
+ expr Operand<space>OPERATOR<space>Operand - infix 
+ |
+ expr 10 + 20
+ 
+ compound style
+ --------------
+ $((expression)) 
+ 
+  - supports infix,prefix,postfix
+  |
+  - won't support floating point
+
+  echo $((10+20)) ->30
+  echo $((10*5)) -->50
+ ---------------------------------------------------------------------
+ Write a shell script 
+
+ step 1: read a disk partition name from <STDIN>  (ex: /dev/xvda1)
+ |
+ step 2: read a disk partition size from <STDIN>  (ex: 120)
+ |
+ step 3: read another disk partition & size from <STDIN>
+ |
+ step 4: calculate sum of two disk size
+ |
+ step 5: display partition name - size & total size in below format
+
+ Partition Name:/dev/xvda1	Size:120
+ ----------------------------------------
+ Partition Name:/dev/xvda2	Size:500
+ ----------------------------------------
+		Sum of partition Size:620
+ ----------------------------------------
+ 
+==============================================================================
+ Relational operators
+ --------------------
+	|
+	|
+ -----------------------
+ |	         	|
+ string			Numbers 0-9
+ "A-Za-z0-9space
+  specialchar"		-eq -ne -lt -gt -le -ge
+ 
+ == !=
+ 
+ a<b -> $a -lt $b
+
+ 10 == 10 ---> 10 -eq 10
+
+ "ab" == "ab" =========> "ab" == "ab"
+ 
+  
+ test operator 
+ -------------
+ test (or) []
+ ----      --
+ 
+ test<space>Expression
+	    ----------
+	   Operand<space>OPERATOR<space>Operand
+
+  (or)
+ [<space>Operand<space>OPERATOR<space>Operand<space>]
+ 
+ Conditional statements
+ ------------------------
+  ->Code block 
+  |
+  -> execute only one time
+  if 
+  case 
+  
+ if statement
+ ----------------
+ 1. if only
+ 2. if..else 
+ 3. if..elif ..
+
+ 1. if only
+ ============
+ Syntax:-
+ ---------
+ if<space>[ Condition ]
+ then
+	True block
+ fi 
+
+ 2. if..else 
+ =============
+ Syntax:-
+ ---------
+ if<space>[ Condition ]
+ then
+	True block
+ else
+	False block
+ fi 
+ 
+ test - user is root -> initialize app name & port number - display it
+	 |
+	 user is not root ->message 
+
+ Write a shell script 
+ |
+ test total no.of process count is above 100  - display top 10 process
+ |
+				   below 100 - display bottom 10 process
+
+ ps -e|head => 10lines from top to bottom
+
+ ps -e|tail => 10line from bottom to top
+ -----------------------------------------------------------------------------
+ 3. if..elif
+ ===========
+ Syntax:-
+ ========
+ if<space>[ condition1 ]
+ then
+	Trueblock-1
+ elif<space>[ condition2 ]
+ then
+	Trueblock-2
+ elif<space>[ Condition3 ]
+ then
+	Trueblock-3
+ ..
+ else
+	False block
+ fi
+
+ Write a shell script
+ step 1: read a shell name from <STDIN>
+ |
+ step 2: test input shell name is bash - initialize profile file name is bashrc
+	 test input shell name is ksh  - initialize profile file name is kshrc 
+	 test input shell name is csh  - initialize profile file name is cshrc
+	 |
+	 default shell name is /bin/nologin  profile filename is /etc/profile
+  |
+ step 3: display shell name & profile file name
+ ------------------------------------------------------------------------------
+ 
+[root@tse ~]# bash -x p5
++ read -p 'Enter a shell name:' sh_var
+Enter a shell name:tcsh
++ '[' tcsh == bash ']'
++ '[' tcsh == ksh ']'
++ '[' tcsh == csh ']'
++ sh_var=/bin/nologin
++ fname=/etc/profile
++ echo 'Shell name:/bin/nologin  profile file:/etc/profile'
+Shell name:/bin/nologin  profile file:/etc/profile
+[root@tse ~]#
+-------------------------------------------------------------------------------
+ Logical operators
+ -----------------
+  -> test more than one condition
+  |
+  -> in single conditional statement,test more than one condition //we can use
+   logical operators
+
+ test port range 501-599 //valid port
+ |
+ test user name & password //both condition should match
+ |
+ test shell name sh (or) bash //any one shell name is matched 
+
+ -a <== logical and 
+ -o <== logical or 
+  ! <== logical not 
+
+ read -p "Enter a port number:" port
+
+ if [ $port -gt 500 -a $port -lt 600 ]
+ then
+	Valid port
+ else
+	Invalid port
+ fi
+ 
+ read -p "Enter a shell name:" sh_var
+
+ if [ $sh_var == "bash" -o $sh_var == "sh" ]
+ then
+	....
+ else
+	...
+ fi
+ ---------------------------------------------------------------------
+ File Test operators
+ --------------------
+    |->file mode (read;write;execute)
+		  -r    -w    -x
+  
+   [ <fileTestoperator><space><inputFilename> ]
+   
+   [ -r $fname ] <== test input file($fname) is readable or not
+   [ -w $fname ] <== test input file($fname) is writeable or not
+   [ -x $fname ] <== test input file($fname) is executable or not
+
+   
+   How to determine file type?
+   file <filename>
+
+   |->file types 
+      -----------
+	1. Regular file (or) ordinary file	-f
+		
+		a. ASCII (or) TEXT file - user can able to read/understand the
+					  content
+		b. ELF - user can't able to read/understand 		
+		   ----
+		  (ex: os commands; c execution file, kernel object files)
+
+	2. Directory 				-d 
+ 	3. symlink (or) softlink (or) link 	-l
+	4. device file (/dev)			
+		a. character type (ex: printer,keyboard,terminal) -c
+		b. block type(ex: storage,usb,cd)		  -b 
+
+	5. named pipe (or) fifo		-p
+
+	6. socket file 			-S
+
+    ->test input file is reg.file or not 
+      
+      [ -f filename ]
+           --------
+		
+      if [ -f filename -a -x filename ];then
+		filename
+      fi
+ 	
+    read -p "Enter a directory name:" dname
+
+    if [ -d $dname ];then  # test input directory is exising or not
+		echo  "Directory $dname is already exists"
+		ls -ld $dname
+    else
+		mkdir $dname
+    fi
+
+  -> input file is existing or not 
+
+	-e filename
+	
+  if [ -e /etc ] ->OK
+  if [ -e /etc/passwd ] ->OK
+  if [ -e /dev/null ] ->OK
+
+  if [ -e invalidfile ] ->Not exists
+ 
+ Write a shellscript 
+ step 1: read a filename from <STDIN>
+ |
+ step 2: test input file is exists or not?
+					|->sorry file is not exists
+			      |
+			      |
+	   step 3: test input file is regular file -> ls -l <filename>
+	           test input file is directory file -> ls -ld <filename>
+		     |
+		   using file command - determine file type
+
+ execute this script in debug mode 		
+ --------------------------------------------------------------------------------
+ $? - last command operation exit status(exit code)
+
+ commandA
+ commandB
+ commandC
+ echo $? - commandC execution status
+ commandD
+
+
+  $? -> 0 (Success)
+  $? -> non-zero ( 1 2 3 126 127 ) - Failed 
+
+ student~]$ mkdir D1
+ student~]$ echo $?
+ 0 <== directory creation is success
+
+ student~]$ mkdir /D1
+ Permission denied 
+ student~]$ echo $?
+ 1 <== Failed 
+
+ ---
+ read a file name from <STDIN>
+ |
+ read a search keyword(pattern) from <STDIN>
+ |
+ using grep command - display matched pattern lines
+ if pattern is not matched - display suitable message 
+ ----------------------------------------------------------------------------
+ case statement
+ ---------------
+   |->Conditional statement
+ Syntax:-
+ ---------
+ case value in
+ pattern1)  pattern1 block operation
+	    ;;
+ pattern2)  pattern2 block operation
+	    ;;
+  ..
+ patternN)  patternN block operation
+	    ;;
+  *)	    default operation
+ esac
+
+ case in esac //keywords 
+
+ ------------------------------------------------------------------------------
+  Looping statements
+  ------------------
+    |-> code block - execute more than one time
+   
+    1. Conditional style - based on the bool value - while loop
+    2. Collection style - based on the no.of items - for loop 
+ 
+
+
+    1. Conditional style - based on the bool value - while loop
+	
+    Rule 1: initialization i=0			i=15
+    |
+    Rule 2: condition	   i<5 => $i -lt 5	$i -gt 5
+    |
+    Rule 3: arithmetic 	   i=`expr $i + 1`	i=`expr $i - 1`
+
+	
+    initialization
+    while<space>[  condition ]
+    do
+		Codeblock
+		arithmetic 
+    done
+   
+    break - exit from loop
+    continue - next iteration - won't exit from loop
+    ========
+	|
+	looping keywords
+  
+   while<space>:
+   do
+	always active
+   done
+
+   press Ctrl+C 
+
+    (or)
+   while /bin/true
+   do
+	 ...
+   done
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ root@host~]# command
+		|
+	   ------------
+	   |	      |
+	 STDOUT	    STDERR
+	  1	       2
+	 |		|
+	 |---monitor----|
+
+ root@host~]# command >newFile
+		       ========
+			|
+			create a newfile and write data to file
+			if file is already exists - overwrite existing content
+
+	      command >>newFile
+		      --
+		        |<-- append operation
+
+ root@host~]# uname
+ Linux
+
+ 
+ root@host~]# uname >r1.log  --- same as --> root@host~]# uname 1>r1.log
+ root@host~]# ls 
+ r1.log
+ root@host~]# cat r1.log
+ Linux 
+ root@host~]# unamee
+ Command not found <== STDERR
+ 
+ root@host~]# unamee 2>err.log
+
+ root@host~]# uname >r1.log 2>err.log 
+ 
+ root@host~]# uname >result.log 2>&1 <== redirect both(STDOUT/STDERR) message to common file
+ 
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ 
+ Write a shellscript
+
+ step 1: initialize a pin number (ex: pin=1234)
+ |
+ step 2: read a pin number from <STDIN>
+	 |
+	 test input with existing pin  
+	 if both pin is matched - display success message - at count 
+	 maximum input limit is 3
+	 //while loop 
+ 	 
+ step 3: if all 3 attempts failed - pin is blocked 
+ 
+ |
+ offline - read a file from <STDIN>
+	   test input file is existing or not
+				|	  ---
+				|	   ->append all the user input(pin details) with date/time
+				|	     to file
+				|	   
+			     file is already exist
+
+	  choice from user - read a existing file content
+-----------------------------------------------------------------------------
+ Collection - more than one value							
+ |
+ for - keyword 
+
+ Syntax:-
+ ----------
+ for variable in <Collection of items>
+ do
+	Code block
+ done
+ 
+ # for in do done - keywords
+ 
+ variable - user defined 
+ 
+ for v in 10 1.34 data /etc/passwd 10.20.30.40
+ do
+	echo "v value:$v"
+ done
+
+ -----------------------------------------------------------------------------

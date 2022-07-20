@@ -1,0 +1,472 @@
+Command based
+|
+programming - Shellscript
+	    - system programming
+	    |
+	    - internals (kernel object)//module
+
+ OS
+ --
+  |-> System software
+  |-> Interface between user & H/W
+  |-> Kernel - core part of an os
+
+   +---------------+
+   |User Layer     |
+   |---------------+
+   |Kernel Layer   |
+   |---------------|
+   |H/W layer      |
+   +---------------+
+  
+ 1945 47 ...50 - OS 
+
+  Unix-Vision: Portable OS
+  ----------
+	OS-(Code)	OS-(Code)	OS-(Code)
+	|		|		|
+	X10		X11	..	X86
+ 
+  unix.org
+   KT & DN ->PDB PDB11 -BCPL
+		........---->B => arch  - 1969
+			     |
+			    B+ => arch  - 1970/71 =>Unix
+			    --
+			    |->C 
+
+  GNU - 1983
+
+   minix os - education
+   |
+  Linustorvalds -Unix => Kernel =>Linux - 1991
+
+   GNU/Linux;utilites
+
+  Unix    Vs  Linux
+  ----	      ------
+ Kernel	      Kernel 
+  +
+ utilites			 
+  
+  RedHat => Kernel + utilites =>RedHatOS
+  Debian => Kernel + utilites =>Ubuntus Linux minit
+
+ RedHat -> yum install <packageName>
+ Debian -> apt install <pacakgeName>
+  
+ 
+    +-----------------------------+
+    |		User		  |
+    ---------------//shell---------
+    |   system call()=FD   STDIN=0  STDOUT=1  STDERR=2 
+			   FD=3 to 2 power 32/64 - Valid Descriptor
+			   FD=0x123 //memory
+			   FD=-1 <== Failed 
+
+ root@host~]# cat /etc/shadow	Vs	student@host~]$ cat /etc/shadow
+				        Permission Denied 
+ root@host~]# command 
+ Success
+ root@host~]# command
+ Error 
+ root@host~]# strace command
+	      ------
+ 
+    +-----------------------------+
+    |		User		  |
+    ---------------//shell-----------------------
+    |   system call()=FD 
+    |	 |
+    |   Filesystem <====> PCB |IPC;SCHED;MM;Net|
+    |    |
+    |   Device Drivers
+    |    |
+    |   Device Controller
+    |    |
+    +-----------------------------+
+    |    H/W			  |
+    +-----------------------------+
+ --------------------------------------------------------------------------
+ what is os?
+ Unix Vs Linux
+ Kernel 
+ Kernel architecture
+ --------------------------------------------------------------------------
+  Shell - interface between user & kernel
+	  interpreter
+	  parent of user created process
+	  
+ different types of shells
+ --------------------------
+ 1. BourneShell(sh)
+ 2. KornShell(ksh) ->tcsh ->expect ->zsh
+ 3. CShell(csh)
+ 4. BourneAgainSHell(bash) - default shell in Linux
+
+ csh			bash
+ ----			-----
+ ls			ls  <== commands
+
+ set var value		var=value <== script
+
+ host01
+ -------
+ Kernel: Linux
+ shell: bash 
+
+ file: p1.sh
+ -------------
+ echo "1st line"
+ ..
+ echo "end of the script"
+ -------------------------
+ root@host01~]# ./p1.sh {Enter}
+ Success	  -----
+		    |-----------------------> host02
+					   Kernel: aix
+					   shell: csh
+					 root@host02~]# uname
+					 aix
+					 root@host02~]# ./p1.sh{enteR}
+					 Error 
+
+ file:p2.sh
+ -------------
+ #!/bin/bash
+ echo "1st line"
+ ..
+ ..
+ echo "End of the line"			root@host02~]# ./p2.sh{Enter}
+					Success
+					
+					csh ->bash ->execute script(p2.sh)
+					|     -----------------------------
+					parent         child
+
+
+ How to find current working shell?
+ ps ->(1)
+ 
+ echo $0 ->(2)
+      --
+       |->Variable 
+
+ root@host02~]# Command 
+ --------------
+   |->shell primary prompt
+
+ How to find list of available shells ?
+
+ cat /etc/shells
+
+
+ in Linux commandline
+ -----------------------
+ echo $0 - active shell (or) running shell (or) working shell name
+ |
+ echo $$ - active shell PID(processID) (or) Running shell Process ID(PID)
+ |
+ -----------------------------------------------------------------------------
+   Kernel Version  <== uname -r
+   |
+   test your shell name & version  <== echo $0  ; bash --version
+   |
+   login name  <== whoami
+ 
+ root@host~]#		student@host~]$       arun@host~]$    anu@host~]$
+  
+   /root <== root user login path
+
+   /home/student
+   /home/arun
+   /home/anu
+  
+			/ <== root directory -like mycomputer
+			|
+   -----------------------------------------------
+   |	|     |		|	|	|      |
+  bin   etc   root	home	proc	dev    ...
+   
+  /bin/ - internal commands
+  /usr/bin/ - installed commands(utilites)
+  /sbin/ - root user only can access 
+
+  /etc - config directory 
+
+  /root - root user login path
+  /home - non-root user login path
+
+  /proc - process (or) current state of kernel 
+
+  root@tse~]# pwd
+  /root
+   
+  whatis <command>  - single line definition
+  |
+  man <command> - command document
+   
+  command 
+  command -option
+  
+  ls {Enter}
+  p1.sh p1.c test.log
+
+  ls -i
+  1234 p.sh 3234 p1.c 43433 test.log
+
+  ls -l
+  rw-rw-r-- .... p1.sh
+  rw-r--r-- ...  p1.c
+  rw-r--r-- . .  test.log
+
+ root@host~]# javac p1.java
+ root@host~]# python p1.py
+ root@host~]# mysql -u root -p password
+ root@host~]# ssh remoteIP
+ root@host~]# gcc p1.c
+ root@host~]# date
+ root@host~]# ls /etc
+ root@host~]# command
+ 
+ 1. shell understanding format is command format
+ 2. shell commandline structure
+	a. command only (ex: pwd ls whoami uname ps etc.,)
+	|
+        b. command arguments(ex: ls -l
+				 echo "arg1 arg2 arg3" )
+
+	|
+	c. command with command =>command `command` (or) command $(command)
+          --------------------------------------------------------------------
+	
+  display following information
+  ------------------------------
+  My kernel name is: 
+  working kernel verison:
+  
+  login name
+  working shell name: $0 and shell PID: $$
+  display current working directory path:
+ -------------------------------------------------------------------------
+  
+ vi - commandline editor
+
+ vi filename{enter} <==(1)
+ --------------------------
+
+	<==(2) //command mode  
+	
+	press 'i'
+	  |
+	insert mode (or) input mode
+ ----------------------------
+        
+ vi editor command mode - save saveAs copy delete insert etc., (except inserting)
+	   ------------
+  
+ vi editor insert mode - insert new text
+	   -----------   
+  insert mode to command mode => press 'ESC'
+
+ To save the content => press 'ESC' -> :w (w - write)
+ 				       |
+				 press shift + :
+
+ To save and exit => press 'ESC' -> :wq (wq - write & quit)
+ 
+   
+ User Layer: command (or) GUI-Appln
+ 		|	   |
+		shell	   Desktop
+ --------------------------------
+	File,Process    <== Kernel abstraction
+   
+ File - Data - Under the storage device
+ |			 ---------------
+ |			   HD (or) USB (or) any storage unit
+ |
+ Process - Data - Under the CPU 
+			    ----
+			    1.fetch the data from memory
+			    2.stores to register
+			    3.execute //process
+ 
+ --------------------------------------------------------------------------------
+  File(F) - by 3 users - each user can perform 3 operation(mode)
+					       -----------
+						read - 'r'
+						write - 'w'
+						execute - 'x'
+	->user (or) author (or) loginuser (u)
+	|
+	->group (g)
+	|
+	->others (o)
+ 
+ ls -l filename
+
+ <fileType><PermissionDetails>
+	   |-----------------|
+		
+   rwx <== can perform read,write,execute
+   rw- <== can perform read,write
+   r-- <== read only 
+   r-x <== read and excute
+  
+   u g  o
+   | |  |
+  rwxrwxrwx
+
+  rw-r--r--
+------------------------------------------------------
+  Symbolic way - to assign/remove filepermission
+  ------------------------------------------------
+  chmod User_details + mode filename(s)	
+
+  To assign execute permission to user
+	    ---------------------------
+  chmod u+x filename
+  
+  to remove execute permission from user
+  
+  chmod u-x filename
+
+  chmod ugo+x filename
+	(or)
+  chmod a+x filename
+	(or)
+  chmod +x filename
+ --------------------------------------------
+ octal way - to assign/remove file permission
+ ---------------------------------------------
+ 4	2	1
+ r	w	x
+ 1	1	1	=> 7
+ 1	1	0	=> 6
+ 1	0	1	=> 5
+ 1	0	0	=> 4
+ 0	0	0	=> 0
+
+ chmod 765 filename
+       |||
+       ||others
+       |group
+      user 
+ 
+ rwxrw-r-x
+ ---===--- 
+   
+ step 1: create a new file (filename: p2.sh)
+ |
+ step 2: display welcome message 
+ |	 using mkdir command - create 2 sub dirs( mkdir D1 D2)
+	 using touch command - create 3 empty files( touch f1 f2 f3)
+	 using copy command copy f1 file to D1 directory (cp f1 D1)
+	 			 f2 file to D2 directory (cp f2 D2)
+	using sleep command - sleep 3 secs (sleep 3) 
+	using echo command - display files are copied to directories
+
+ |
+ step 3: save and exit 
+ |
+ step 4: give execute permission to this file
+ |
+ step 5: test your current directory (ls {enteR})
+ |
+ step 6: run a file (p2.sh) ./p2.sh (or) /root/p2.sh
+ ...
+ step 7: ls {Enter}
+ -------------------------------------------------------------------------
+ shell script
+       ------
+	|-> variables
+	|-> operators
+	|-> conditional statements 
+	|-> looping statements
+	|-> function
+	|-> filters
+
+ new to script /program
+ ==========================
+ step 1: understand the topic definition
+ |
+ step 2: understand the topic syntax 
+ |
+ step 3: refer existing examples
+ |
+ step 4: exercise
+
+ variable - namespace (or) placeholder - which is holding a value
+ --------
+	values are digits string space specialchars command commandresult etc.,
+	
+ Syntax:-
+ ----------
+ variablename=Value
+ ------------
+   |
+  user defined  
+
+ Rule 1: variable name starts with A-Za-z_ (not digits)
+ Rule 2: variable name not allows space,specialchars 
+ Rule 3: There is no space in assignment operator(=) LHS,RHS
+ 
+  IP='127.0.0.1'
+  name=`whoami`  (or) name=$(whoami) 
+  cmd="date"
+
+  v1=date  vs v2=`date`
+
+  echo $variableName  (or) echo ${variableName}
+ 
+  var=100
+  LB=1.15
+  server="Linux"
+  fname="/etc/passwd"
+  os=`uname`
+
+  echo "var value is:$var"  
+  echo "var value is:${var}"
+  |
+  echo "Load balance:${LB}"
+  |
+  echo "Server name is:${server}"
+  |
+  echo "Working kernel name is:${os}"
+  ---------------
+   
+		
+   Keyboard(<STDIN>)----<-----Script------->-------Monitor(STDOUT)
+			read		echo
+  
+  Syntax:-
+  ---------
+  read userdefinedVariable
+   
+  echo "Enter your name:"
+  read name
+  echo "Hello..$name"  # echo "Hello..${name}"
+
+  echo "Enter your filename:"
+  read fname
+  echo "File:$fname details"
+  ls -l $fname
+  
+  echo "Enter your directory name:"
+  read dname
+  mkdir $dname
+  echo "Directory $dname is created"
+  echo "About $dname details:-"
+  ls -ld $dname
+  echo "-------------------------"
+
+  read -p "prompt message:"<space>UDV  <== UserDefinedVariable
+	
+  echo "Enter your name:"
+  read name
+	Vs
+  read -p "Enter your name:" name
+   	  |----STDOUT------| <STDIN>
+    
+ --------------------------------------------------------------------------------------------  
