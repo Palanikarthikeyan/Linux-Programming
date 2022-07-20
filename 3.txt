@@ -1,0 +1,858 @@
+Commandline arguments
+|
+Array
+|
+Functions
+|
+Filters + Regx
+--------------------------
+
+Recap
+------
+Linux arch
+|
+shell & types of shell
+|
+script (programming)
+ |->variables
+	|->1. user defined variable
+	|->2. shell variable 
+	|->3. commandline args
+	|->4. array
+ |->operators
+	|->1. arithmetic (expr; compound style)
+	|->2. relational
+	|->3. logical
+        |->4. file test 
+ |->Conditional statement 
+	|->1. if
+	|->2. case
+ |->Looping statements
+	|->1. conditional style - while
+	|->2. collection style  - for
+ |->function
+ 
+ |->filters + Regx
+    -------   =====
+ _____________________________________________________________________
+ 
+ Linux file path
+ ----------------
+ 1. absolute path => start from /
+ 
+   /home/arun/project/moduleA/p1.c
+   --------------------------------
+    arun@host~]$ cat /home/arun/project/moduleA/p1.c
+
+ 2. Relative path 
+    --------------
+     arun@host~]$ pwd
+     /home/arun
+     arun@host~]$ ls
+     project
+     arun@host~]$ cat project/moduleA/p1.c 
+	
+     arun@host~]$ cat ./project/moduleA/p1.c 
+
+  cat <filename>
+ ---------------------------------------------------------------------	
+ vi - commandline editor
+ --
+
+ 1. command mode - save saveAs insert copy paste delete etc.,
+ 2. insert mode  - inserting text
+ 3. exit mode	 - quit from editor
+
+ vi <filename>{enter}
+
+  <command mode>
+	|
+	press i
+	|
+   <insert mode> - we can type our input
+	
+  to save the content -> press ESC :w //command mode
+		   
+ 
+ press ESC -> yy (line copy) 
+	      p (paste)
+	      o (new line in below)
+	      O (new line in above)
+ 	      dd (delete the line)
+	      u (undo)
+	      . (redo)
+ ----------------------------------------------------------------------------
+               read
+ Keyboard ------<--------- program-------->---------Monitor
+ <STDIN>				echo	    STDOUT
+	
+
+ 
+ echo "user defined message"
+ echo 
+ echo $variable
+ echo `command`
+ -------------------------//valid
+
+ read <userdefinedVariable>
+ 
+  port=5000	Vs	read port
+
+ read -p "user defined message"<space>UserdefinedVariable
+	 |-----STDOUT---------|       <STDIN>		
+ ----------------------------------------------------------------------------
+
+ 10:30pm    -> /root/mydir/backup.sh
+			   ----------
+	    -> /root/mydir/p1
+			   ---
+	    -> /bin/command
+		    --------
+ crontab -e
+ 30 22 *  *  *   * /root/mydir/p1.sh
+		   /root/mydir/p1
+
+  file:p1.sh
+  ----------
+  read -p "Enter your IP address:" IP
+  ping -c 3 $IP >>/var/log/pin_report.log
+  -------------
+
+  root@host~]# ./p1.sh {Enter}
+  Enter your IP address:192.168.1.234{enter}
+  root@host~]#
+  
+  crond -->bash -> /root/mydir/p1.sh
+  
+  Enter your IP address:
+
+ --------------------------------------------------------------------------
+ root@host~]# ./p1.sh {Enter}
+ Enter a port number: 9090<== this input is interactive input
+				  (or) execution input
+				 i.e., p1.sh is running state
+
+
+ root@host~]# ./p2.sh 9090 {enter}
+		      ----
+			|<== non-interactive input - commandline argument
+			i.e., p2.sh is not running state
+
+ root@host~]# ./p3.sh 9090 app test.conf 452.45 //commandline args
+		      ---- --- --------- ------
+			
+    special variable => ${n}
+			  |->nth argument
+
+		echo $1 is same as echo ${1}
+		echo $2 -- ${2}
+		echo $9 -- ${9}
+		echo ${10}
+		echo ${11}
+		..
+		echo ${20}
+
+ file: ip_test.sh
+ -----------------------
+ ping -c 3 ${1} >r1.log
+ -----------------------
+
+ 30 22 ...... /root/ip_test.sh 127.0.0.1
+	      ---------------- ==========
+  
+ ${n} - nth argument
+ 
+ $@ (or) $* - list of all the arguments
+
+ $# - Total no.of args
+
+
+ Write a shell script
+ using commandline args - calculate sum of two numbers
+ ------------
+
+ Write a shell script 
+ |
+ using commandline args - test file is existing or not
+	
+ Validation: commandline argument is not an empty
+	     commandline argument is not allows more than one argument
+ ./pt.sh 
+ Commandline argument is empty
+
+ ./pt.sh f1.log f2.log
+ Commandline argument allows single inputfile 
+ -------------------------------------------------------------------------
+ linux commandline -> echo $0 - working shell name
+		      echo $$ - working shell process ID(PID)
+		     
+ in side shellscript file
+ -------------------------
+ vi p1.sh {Enter}
+ 
+ echo $0 ->Working script file name
+ echo $$ ->Working script process ID(PID)
+ -----------------------
+
+ ============================================================================
+ Array
+ -----
+  |->Variable - holding more than one value(different types)
+  |
+  
+ Syntax:-
+ ---------
+ ArrayName=(list of items)
+
+ os=(redHat ubuntu sunos 123 45.25 /bin/true /bin/false /etc/passwd)
+	0	1    2    3    4	5	6	   7 <== index
+  
+  How to fetch single item?
+
+  ${arrayname[index]}
+
+ echo ${os[1]} ->ubuntu
+	
+ echo ${os[2]} ->sunos
+
+ echo ${os[9]} ->Emptystring 
+ 
+  How to print list of all items?
+
+ echo ${Arrayname[@]}  (or) echo ${Arrayname[*]} 
+ 
+    command ->Single number/str => var=`command` (or) var=$(command)
+	
+    command ->multiple number/str/lines => var=(`command`) (or) var=($(command))
+
+ va="unix linux sunos aix"   Vs   vb=(unix linux sunos aix)
+
+ echo ${va} ->unix linux sunos aix    Vs  echo ${vb[0]} ->unix
+					  echo ${vb[1]} ->linux
+							
+				    vb[1]="RedHat7.9" we can modify nth index
+				
+				echo ${vb[@]} =>unix RedHat7.9 sunos aix
+ ------------------------------------------------------------------------------
+ unix/linux filters
+ -------------------
+ read	- read data from <FILE> (or) PIPE
+ |
+ stores - stores data to buffer
+ |
+ execute - execute filter command on the buffer //there is no changes inside the file
+ |
+ display - display executed result to monitor 
+
+ grep - search 
+ sed  - search,substitute,insert,execute shell commands,write 
+ awk  - search + formatting 
+ -----
+ ---------------------------------------------------------------------------------
+ grep - search pattern from input(PIPE or FILE)
+ ----
+ grep -option pattern inputfile(s)
+ 
+  -n matched pattern lines
+  
+  -i ignore pattern case 
+
+  -e extended pattern (multipattern)
+  
+  -l list matched pattern filename only 
+  
+  -v not matching pattern
+ 
+  -c pattern count 
+ 
+ 
+  write a shell script
+  read a package name from commandline argument 
+  test pacakge is exists or not using rpm command
+  |
+  |
+  multiple package 
+  |
+  for loop - iterate - condition - test package is exists or not
+   
+  gcc g++ gdb python3 zsh ksh createrepo irb
+ --------------------------------------------------------------------
+ Regular Expression
+ ------------------
+  - search pattern(string,digits,space,char,emptyline,specialchars)
+ 		
+ Basic Regular Expression(BRE)	Vs	Extended Regular Expression (ERE) -E option
+ -----------------------------		-----------------------------------
+ 	single pattern 				more than one pattern 
+  			
+   ^						|  ()  + {}
+   $
+   ^pattern$
+   .
+   .*
+  [ ]
+  ^[ ]
+   [ ]$
+  [^ ]
+    ^$
+ 
+
+ ^ -> ^pattern - line starts with pattern
+
+ grep bash IP
+
+ grep ^bash IP
+
+ $ --> pattern$  - line ends with pattern
+ 
+ ^pattern$ ->pattern only style 
+  -------
+   
+ .(dot) - match any single char except \n
+
+ .* - list of all 
+
+ character based search
+ ----------------------
+ 	[] - 1 char
+ 	[][] - 2 chars
+
+  [Aa]run
+  ---------Arun arun //matched
+  
+  [Aak][Rr]un
+   ------------
+   ARun
+   Arun
+   aRun
+   arun
+   kRun
+   krun
+   -------//matched 
+
+  [a-z]
+  [A-Z]
+  [a-zA-Z]
+  [0-9]
+  [a-zA-Z0-9]
+
+  ^[a-zA-Z0-9]
+
+  ^[a-zA-Z0-9].*[0-9]$
+  
+ line starts with any alpha numeric followed by list of all ends with any digit
+
+
+  grep ^[A-Z] IP
+       ------------
+	|->Line starts with any uppercase chars 
+
+  grep [^A-Z] IP
+       ------
+	|->NOT Matching any uppercase chars 
+
+  grep [^A-Za-z0-9' '] IP 
+       ----------------
+		|->NOT matching alpha number space 
+
+ ^$ - empty line 
+	
+ 
+grep "^[A-Z].*[a-z]$" IP  -->(1)
+
+ grep "[[:space:]]$" IP --->(2)
+
+
+ grep -E "Pattern1|Pattern2"  inputfile 
+
+ any one pattern is matched - True
+
+ grep -E "^[A-Z].*[a-z]$|[[:space:]]$" IP 
+  
+ (pattern1)(pattern2) - both pattern should match in same order 
+ 
+ <Pattern>+ - 1 or more times 
+ ----------
+ ab+c => abc abbbbbbbbbbbbbbbbbbbbbbc //matched 
+         abbb,bbbbc //not matched 
+
+ ^[[:space:]][0-9]+[a-z]$
+  -----------======
+ 
+ {}
+ --
+ <Pattern>{n} - n times
+
+ ab{2}c => abbc 
+ 
+ ab{3}c ==> abbbc 
+ 
+ <Pattern>{n,} - minimum 'n' times maximum nolimits
+
+ ab{2,}c --> abbc abbbbbbbbbbbbbbbbbbbbbbbbbbbbbc
+ 
+  ab+c ---same as -- ab{1,}c 
+ 
+ <Pattern>{n,m} - minimum 'n' times maximum 'm' times
+ 
+ ab{2,4}c ==> abbc abbbc abbbbc //matched
+ 
+  ^[A-Za-z_0-9]{6,8}$
+
+ ---------------------------------------------------------------------------------
+ grep 
+ -----
+ grep -option pattern inputfile 
+
+ sed
+ ----
+ sed -option 'patternAction' inputfile
+		     ------
+ 
+ pattern
+ -------
+ 1.Line number (or) Address 
+ 2.text (or) string - like grep 
+ 
+ Action
+ ------
+ print(p) delete(d) substitute(s) insert(i) execute(e) 
+ write(w)
+
+ print 3rd line content from config file
+ |
+ delete 1st line content from command result
+ |
+ substitute bash -> ksh
+ |
+ insert newtext 1st and last line
+ 
+ line number based filter
+ ---------------------------
+ print(p) action
+ -----------------
+ sed -n 'Np' inputfile 
+	 |
+	 |->print Nth line 
+ print 3rd line data from /etc/passwd file 
+
+  sed -n '3p' /etc/passwd 
+ 
+ sed -n 'N,Mp' inputfile
+
+	from Nth line to Mth line 
+
+
+ write(w) action
+ ---------------
+ sed -n 'Nw resultfile' inputfile
+
+ sed -n '3p' IP >r1.log  same as  sed -n '3w r1.log' IP
+				  =======================
+-----------------------------------------
+ print(p) write(w) - use -n option
+-----------------------------------------
+ 
+ delete (d) <== opp.of print action 
+ 
+
+ file
+ -----
+ data1
+ data2
+ data3
+ -----
+ 
+ print 2nd line -> data2
+
+ delete 2nd line -> data1
+	 	    data3
+ 
+ sed '2d' file
+ --------------------------------------------------------------
+  N -> /text/
+
+ print 3rd line => sed -n '3p' 
+
+ print sales data => sed -n '/sales/p'
+ 
+ grep ^sales emp.csv --- same as -->  sed -n '/^sales/p' emp.csv
+      -------                                 ----------
+    
+ ps -e|grep -E 'systemd|init|crond' --> sed -nr '/systemd|init/crond/p' 
+
+ -r - enable ERE in sed command
+ ----------------------------------------------------------------------------
+ substitute(s)
+ --------------
+ sed 's/old/replace/' inputfile
+        |
+        find old pattern from inputfile 
+	if old pattern is matched ->replace newstring
+	if old pattern is not matched with inputfile - there is NO replacement
+
+ echo "101,raj,sales,pune,1000"|sed 's/sales/prod/'
+ 101,raj,prod,pune,1000
+
+  
+ -------------------------------------------------------------------
+ sed -n '2,5p' 
+	 | |
+	2nd line to 5th line
+
+ sed -n '/pattern1/,/pattern2/p' 
+	
+	pattern1 to pattern2
+
+ N ->/text/
+ 
+ cat /var/log/messages |sed -n '/^Jul 20 07:23.*/,/^Jul 20 07:24.*/p'
+
+ cat /var/log/messages |sed -n '/^Jul 20 07:23.*/,/^Jul 20 07:24.*/w r2.log'
+
+ ---------------------------------------------------------------------------------
+ grep = search only 
+ ----
+ pattern -> Text 
+ action  -> print (or) display
+
+ sed = search & substitue
+ ----
+ pattern -> line number,/text/
+ action -> p w d s 
+
+ awk = search & formatting 
+ ---
+ pattern -> /Text/
+ action  -> print 
+
+ awk -option '/pattern/{Action}' inputfile 
+ 
+ awk -option '/pattern/{print}' inputfile 
+ 
+ read - read data from <input> - line by line 
+ |
+ split - split each line into multiple fields based on option separator
+	 default field sep is space
+ |
+ search  - search a pattern
+ |
+ action - print 
+ 
+ IP
+ --
+ 101:userA:bash
+ 102:userB:csh
+ 103:userC:ksh
+ 104:userD:bash
+
+ awk -F: '/bash/{print} IP
+ 
+ step 1:  read - read data from <input> - line by line
+ 
+ 1  101:userA:bash
+ ------------------
+ 2 102:userB:csh
+ -----------------
+ 3 103:userC:ksh
+ -----------------
+ 4 104:userD:bash
+ ------------------- 
+
+ step 2: split -F:
+ 
+ NR  $1   $2    $3 
+               (or) 
+		$NF
+ 1  101|userA |bash
+ ------|------|----
+ 2 102 |userB |csh
+ ------|------|--
+ 3 103 |userC |ksh
+ ------|------|---
+ 4 104 |userD |bash
+ ------|------|----- 
+  |<===== $0 =====>|
+
+ awk -F: '/bash/{print $1,$NF}' IP
+ 101 bash
+ 104 bash
+
+-------------------------------------------------------------------------------
+ # Command history
+ # -----------------
+
+ls /etc/*.conf
+for v in `ls /etc/*.conf`; do echo "File name:$v"; ls -l $v; sleep 1 done
+df
+df -Th
+df -T
+df -T|awk '{print $5}'
+df -T|awk '{print $5}'|sed '1d'
+for v in `df -T|awk '{print $5}'|sed '1d'`; do echo "$v"; done
+total=0
+for v in `df -T|awk '{print $5}'|sed '1d'`; do total=`expr $total + $v`; done
+echo $total
+t=0
+for v in 1  2 3 4 5; do t=`expr $t + v`
+for v in 1 2 3 4 5; do t=`expr $t + $v`; done
+echo $t
+
+
+[root@tse ~]# cat /var/log/messages |sed -n '/^Jul 20 07:23.*/,/^Jul 20 07:24.*/p'
+Jul 20 07:23:58 tse dhclient[2900]: DHCPREQUEST on eth0 to 172.31.16.1 port 67 (xid=0x72531d5c)
+Jul 20 07:23:58 tse dhclient[2900]: DHCPACK from 172.31.16.1 (xid=0x72531d5c)
+Jul 20 07:23:58 tse NET: dhclient: Locked /run/dhclient/resolv.lock
+Jul 20 07:23:58 tse dhclient[2900]: bound to 172.31.27.96 -- renewal in 1687 seconds.
+Jul 20 07:23:58 tse ec2net: [get_meta] Querying IMDS for meta-data/network/interfaces/macs/0a:82:c2:87:29:b1/local-ipv4s
+Jul 20 07:23:58 tse ec2net: [get_meta] Getting token for IMDSv2.
+Jul 20 07:23:58 tse ec2net: [get_meta] Trying to get http://169.254.169.254/latest/meta-data/network/interfaces/macs/0a:82:c2:87:29:b1/local-ipv4s
+Jul 20 07:23:58 tse ec2net: [remove_aliases] Removing aliases of eth0
+Jul 20 07:24:38 tse dhclient[2945]: XMT: Solicit on eth0, interval 112590ms.
+[root@tse ~]#
+[root@tse ~]#
+[root@tse ~]# cat /var/log/messages |sed -n '/^Jul 20 07:23.*/,/^Jul 20 07:24.*/w r2.log'
+[root@tse ~]#
+[root@tse ~]# vi r2.log
+[root@tse ~]#
+[root@tse ~]#
+[root@tse ~]#
+[root@tse ~]# grep bash /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+ec2-user:x:1000:1000:EC2 Default User:/home/ec2-user:/bin/bash
+[root@tse ~]#
+[root@tse ~]# awk -F: '/bash/{print $1,$NF}' /etc/passwd
+root /bin/bash
+ec2-user /bin/bash
+[root@tse ~]# awk -F: '/bash/{print $1,$4,$NF}' /etc/passwd
+root 0 /bin/bash
+ec2-user 1000 /bin/bash
+[root@tse ~]#
+[root@tse ~]# ps
+  PID TTY          TIME CMD
+ 3567 pts/0    00:00:00 bash
+ 5202 pts/0    00:00:00 ps
+[root@tse ~]#
+[root@tse ~]# ps|awk '{print $1}'
+PID
+3567
+5203
+5204
+[root@tse ~]# ps|awk '{print $2}'
+TTY
+pts/0
+pts/0
+pts/0
+[root@tse ~]# ps|awk '{print $3}'
+TIME
+00:00:00
+00:00:00
+00:00:00
+[root@tse ~]# ps|awk '{print $4}'
+CMD
+bash
+ps
+awk
+[root@tse ~]# ps|awk '{print $1,$4}'
+PID CMD
+3567 bash
+5212 ps
+5213 awk
+[root@tse ~]# ps|awk '/bash|awk/{print $1,$4}'
+3567 bash
+5215 awk
+[root@tse ~]#
+[root@tse ~]# ps|awk '/bash|awk/{print $1,$4}'
+3567 bash
+5269 awk
+[root@tse ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:           3920         105        3595           0         219        3603
+Swap:             0           0           0
+[root@tse ~]#
+[root@tse ~]# df -Th
+Filesystem     Type      Size  Used Avail Use% Mounted on
+devtmpfs       devtmpfs  2.0G     0  2.0G   0% /dev
+tmpfs          tmpfs     2.0G     0  2.0G   0% /dev/shm
+tmpfs          tmpfs     2.0G  412K  2.0G   1% /run
+tmpfs          tmpfs     2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/xvda1     xfs        30G  1.6G   29G   6% /
+tmpfs          tmpfs     393M     0  393M   0% /run/user/0
+[root@tse ~]#
+[root@tse ~]#
+[root@tse ~]# A=(150G 500G 120MB g50)
+[root@tse ~]#
+[root@tse ~]#
+[root@tse ~]# A=(150G 500G 120MB g50)
+[root@tse ~]#
+[root@tse ~]# echo "150G"|sed 's/G//'
+150
+[root@tse ~]# echo "150G"|sed 's/[A-Za-z]//'
+150
+[root@tse ~]# echo "101,raj,sales,pune,sales"|sed 's/sales/***/'
+101,raj,***,pune,sales
+[root@tse ~]# echo "101,raj,sales,pune,sales"|sed 's/sales/***/g'
+101,raj,***,pune,***
+[root@tse ~]#
+[root@tse ~]# echo "150GB"|sed 's/[A-Za-z]//'
+150B
+[root@tse ~]# echo "150GB"|sed 's/[A-Za-z]//g'
+150
+[root@tse ~]#
+[root@tse ~]# vi p22
+[root@tse ~]# chmod a+x p22
+[root@tse ~]# ./p22
+Sum of disk size:820
+[root@tse ~]#
+[root@tse ~]# cat -n p22
+     1  A=(150G 500G 120MB g50)
+     2  t=0
+     3  for v in ${A[@]}
+     4  do
+     5          v=`echo $v|sed 's/[a-zA-Z]//g'`
+     6          t=`expr $v + $t`
+     7  done
+     8  echo "Sum of disk size:$t"
+[root@tse ~]#
+[root@tse ~]# ./p22
+Sum of disk size:820
+[root@tse ~]#
+
+
+
+ 
+ 
+
+
+
+ 
+ 
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+ 
+
+  
+	 
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+ 							
+				
+	
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
