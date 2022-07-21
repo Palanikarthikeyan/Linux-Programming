@@ -1,0 +1,163 @@
+Q1.How to find current working shell in linux terminal ?
+	a. echo $SHELL
+	b. echo $0
+	c. option a and b both
+	d. none
+
+Q2.How to find current working shell PID and parent process PID in linux shell?
+	a. echo $$;echo $$PPID
+	b. echo $$;echo $ppid
+	c. echo $$;echo $PPID
+	d. echo $0;echo $PPID
+
+Q3. _________ is a command display how long hours cpu is running?
+	a. uname
+	b. ps
+	c. uptime
+	d. monitor
+
+Q4. How to test package gdb is installed or not?
+	a. rpm -qa|grep gdb
+	b. ls /bin/gdb
+	c. none 
+
+Q5. How to predict last command execution status code?
+	a. echo $$
+	b. history
+	c. echo $!
+	d. echo $?
+-------------
+Q6.  predict the result of below code
+	a=10
+	a="bash"
+	a=0.12
+	a="test.java"
+	echo $a
+	a. 10
+	b. 0.12
+	c. test.java
+	d. empty
+
+Q6. c=0
+    c=`expr $c + 1`
+    c=`expr $c + 1`
+    echo $c 
+    
+     a. 0
+     b. 1
+     c. 2
+     d. 3
+
+
+Q7.How to find out total no.of arguments in linux commandline?
+	a. $0
+	b. $#
+	c. $-
+        d. $!
+
+Q8.How to redirect command error to external file?
+	a. command 1>Error.log
+	b. command 2>Error.log
+	c. command >Error.log
+Q9.case `uname` in
+     Linux)  echo "ONE" ;;
+     aix)    echo "TWO" ;;
+     sunos)  echo "THREE" ;;
+      *)     echo "FOUR" 
+     esac
+     predict the output of the above code
+
+      a. ONE
+      b. TWO
+      c. THREE
+      d. FOUR
+
+Q10.
+for var in p1.sh p2.sh p3.sh p4.sh p5.sh
+     do
+	if [ $var == "p2.sh" -o $var == "p4.sh" ];then
+		continue
+	else
+		echo $var
+	fi
+     done
+	
+     predict the output of the above code
+	
+	a. p1.sh 
+	b. p1.sh p2.sh
+	c. p1.sh p3.sh 
+	c. p1.sh p2.sh p5.sh
+	d. p1.sh p3.sh p5.sh
+
+
+Q11.student@host~]$  mkdir /D1 || mkdir D2
+	from the above line which directory will get create?
+	a. /D1
+	b. D2
+	c. both directory will create
+	d. Error
+
+Q12.Unix shell script commandline arguments are called  positional parameters.
+	a. YES
+	b. NO
+
+Q13. How to search multiple pattern using grep ?
+	a. grep <pattern1> <pattern2> ... <patternN> filename
+	b. grep -E <pattern1> <pattern2> ... <patternN> filename
+	c. grep -e <pattern1> <pattern2> ... <patternN> filename
+	d. grep -E "<pattern1>|<pattern2>| ... |<patternN>" filename
+
+Q14. cat /proc/filesystems|grep "^[[:space:]]"
+	
+     a. filter space chars only
+     b. filter matches line starts with space character
+     c. filter matches line starts with special character
+     d. filter empty lines
+
+Q15. Filter list of process name ends with any digits ?
+	a. ps -e|grep "[0-9]"
+	b. ps -e|grep "[0-9]*"
+	c. ps -e|grep "[0-9]$"
+	d. ps -e|grep "[0-9].$"
+-------
+Q16.
+using sed demonstrate following grep commands
+	  ---
+	i) grep bash /etc/passwd
+	ii)ps -e|grep -vE "bash|python|d$" 
+	iii) grep -v "^$" IP
+
+Q17.
+How to replace (substitute) bash shell to csh shell in below
+    input file:
+	
+    file
+    ----
+    1010:bash:userA
+    userB:1034:bash
+    userC:334:ksh
+    userD:3433:bash:bash
+    BASH:userE:3423
+
+Q18.How to find process name cron,systemd,init,python in running linux shell
+   use sed command
+
+Q19. How to filter log content from <DATE> to <DATE> from test.log?
+
+
+Q20. Given inputfile:IP.txt
+     ------------------------
+      ***** Header *********
+      Data1
+      Data2
+      Data3
+      ****** Footer *******
+     -------------------------
+      How to delete Header line & footer lines ?
+-------------------------------------------------------------------------------
+
+
+
+	
+     
