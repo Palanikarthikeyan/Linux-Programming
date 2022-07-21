@@ -1,0 +1,705 @@
+ 
+ Test operator
+ ---------------
+ [ expression ]
+
+ Expanded test operator
+ -----------------------
+ [[ Expression ]]
+
+ name="Admin"
+ password="Welcome"
+ 
+ app="TestApp"
+ port=567
+ 
+ test user credientials & app 
+ 
+[ $name == "Admin" -a $password == "Welcome" -a $app == "TestApp" -a $port -gt 500 ]
+  ---------------     ---------------------     ----------------     --------------
+ 
+ 
+[ $name == "Admin" -a $password == "Welcome" ] -a [ $app == "TestApp" -a $port -gt 500 ] //Error
+
+[[ $name == "Admin" && $password == "Welcome" ]] && [[ $app == "TestApp" && $port -gt 500 ]] //OK
+  
+------------------------------------------------------------------------------------
+ Singleline validation
+
+ Command1 && Command2
+  |
+ Success ->then Command2 will execute
+ 
+Command1 && Command2
+  |
+ Failed ->then Won't execute Command2 
+
+ if [ `whoami` == "root" ]
+ then
+	echo "do admin task"
+ fi
+	Vs
+ 
+ `whoami` == "root" && echo "do admin task" 
+ 
+  if [ -f $fname ];then
+	cat $fname
+  fi
+
+  [ -f $fname ] && cat $fname 
+   
+  --------------------------------------------------
+  command1 || command2
+   |
+  Success ->won't execute command2
+
+  command1  || command2
+   |
+  Failed ->then execute command2
+ 
+ 
+#if ! [ -f test.log ];then
+#       exit
+#fi
+
+[ -f test.log ] || exit
+ 
+-----------------------------------------------------------------------------------
+ variable=Value
+	  -----
+	   |
+ variable=`command` (or) variable=$(command)
+  |
+ Array=(`command`)   (or) Array=($(command))
+ 
+ $1 $2..$9 (or) ${n}
+
+ $@ $* 
+ $#
+ --------------------
+ Redirection
+ ------------
+ command >filename
+	  --------//create & write data to FILE
+		    if file is already exists - overwrite
+ command >>filename
+	 --
+	  |->append - won't overwrite existing data
+
+ command 2>err.log
+ ------------------------------------
+ [root@tse ~]# cat >test1.txt
+this is sample test data
+next line text
+we can't use cursor keys
+we can't edit previous line and next line
+press ctrl + d - eof
+[root@tse ~]#
+
+[root@tse ~]# cat test1.txt
+this is sample test data
+next line text
+we can't use cursor keys
+we can't edit previous line and next line
+press ctrl + d - eof
+[root@tse ~]#
+
+[root@tse ~]# cat >test1.txt 
+#include<stdio.h>
+int main(){
+        printf("Hello\n");
+}
+[root@tse ~]# cat test1.txt
+#include<stdio.h>
+int main(){
+        printf("Hello\n");
+}
+[root@tse ~]#
+ 
+--------------------------------------------------------------------------------
+ grep - searching only - patterns are text(digits,space,specialchars,alpha)
+ ----
+ |
+ sed - search ,delete,write,substitute,execute shellcommands
+ ---   		 
+ patterns 
+ ----------
+ 1.Line number 
+ 2.Text 	 
+ 
+  
+ 
+[root@tse ~]# ps
+  PID TTY          TIME CMD
+ 3343 pts/0    00:00:00 bash
+ 3523 pts/0    00:00:00 ps
+[root@tse ~]# process=(`ps`)
+[root@tse ~]#
+[root@tse ~]# echo ${process[@]}
+PID TTY TIME CMD 3343 pts/0 00:00:00 bash 3524 pts/0 00:00:00 ps
+[root@tse ~]#
+[root@tse ~]# echo ${process[0]}
+PID
+[root@tse ~]# echo ${process[1]}
+TTY
+[root@tse ~]# ps|sed 's/[[:space:]]/-/g'
+--PID-TTY----------TIME-CMD
+-3343-pts/0----00:00:00-bash
+-3525-pts/0----00:00:00-ps
+-3526-pts/0----00:00:00-sed
+[root@tse ~]# ps|sed 's/[[:space:]]//g'
+PIDTTYTIMECMD
+3343pts/000:00:00bash
+3528pts/000:00:00ps
+3529pts/000:00:00sed
+[root@tse ~]# ps|sed 's/[[:space:]]/:/g'
+::PID:TTY::::::::::TIME:CMD
+:3343:pts/0::::00:00:00:bash
+:3530:pts/0::::00:00:00:ps
+:3531:pts/0::::00:00:00:sed
+[root@tse ~]# ps|sed 's/[[:space:]]/-/g'
+--PID-TTY----------TIME-CMD
+-3343-pts/0----00:00:00-bash
+-3532-pts/0----00:00:00-ps
+-3533-pts/0----00:00:00-sed
+[root@tse ~]#
+[root@tse ~]# process=(`ps|sed 's/[[:space:]]/-/g'`)
+[root@tse ~]#
+[root@tse ~]# echo ${process[0]}
+--PID-TTY----------TIME-CMD
+[root@tse ~]# echo ${process[1]}
+-3343-pts/0----00:00:00-bash
+[root@tse ~]# echo ${process[2]}
+-3534-pts/0----00:00:00-bash
+[root@tse ~]#
+[root@tse ~]# echo "101,raj,sales,pune,1000"|sed 's/,/ /g'
+101 raj sales pune 1000
+[root@tse ~]#
+[root@tse ~]# A=(`echo "101,raj,sales,pune,1000"|sed 's/,/ /g'`)
+[root@tse ~]#
+[root@tse ~]# echo ${A[0]}
+101
+[root@tse ~]# echo ${A[1]}
+raj
+ 
+ ------------------------------------------------------------------------
+ awk - search + format(table format - Row X Column)
+ ---
+  pattern - text
+
+ 
+ awk 
+ ---
+  -> commandline filter
+  -> programming language (variable,operators,conditional,loops etc.,)
+			   ------------------------------------------
+				|-> C style programming 
+
+ awk -F<sep> '/pattern/{print}' inputfile
+  
+ read
+ |
+ split - based -F<sep> if this option -F is ignored - default Field Sep is space
+ |
+ search
+ |
+ print 
+ 
+
+ OFS - output field sep - default OFS value is space
+  
+ awk array
+ ---------
+ arrayname[userdefinedIndex]=Value
+	   ----------------
+		|
+		anytype
+
+ os[0]="unix"
+ os["abc"]="Linux"
+ os[45]="BSD"
+ os[54]=1.455
+ -----------------//valid
+ 
+ print os[0]
+ print os["abc"]
+ print os[45]
+ print os[54]
+
+ for(index in Array){
+	Array[index]
+ }
+ -----------------------//awk for loop
+
+ # for in - keywords 
+ # 
+ # array index - userdefined 
+
+ for(x in os){
+	print os[x]
+ }
+
+ system("command")
+ split() - split single data to multiple data
+ -------	 -----------	--------------
+		   str			array
+
+ Syntax:-
+ ---------
+ split(inputString,outputArray,fsep)
+				|
+				Regx
+
+ [root@tse ~]# echo "Jul 20 07:23:58 tse ec2net:x[Ci:[get_meta] Getting token for IMDSv2."|awk '{print $1}'
+Jul
+[root@tse ~]# echo "Jul 20 07:23:58 tse ec2net:x[Ci:[get_meta] Getting token for IMDSv2."|awk '{print $3}'
+07:23:58
+[root@tse ~]#
+[root@tse ~]# echo "Jul 20 07:23:58 tse ec2net:x[Ci:[get_meta] Getting token for IMDSv2."|awk '{split($3,a,":");for(x in a){print a[x]}}'
+07
+23
+58
+[root@tse ~]#
+[root@tse ~]#
+[root@tse ~]# echo "Jul 20 07:23:58 tse ec2net:x[Ci:[get_meta] Getting token for IMDSv2."|awk '{print $3}'|awk -F: '{print $1,$2,$3}'
+07 23 58
+[root@tse ~]# echo "Jul 20 07:23:58 tse ec2net:x[Ci:[get_meta] Getting token for IMDSv2."|awk '{print $3}'|awk -F: '{OFS="\n";print $1,$2,$3}'
+07
+23
+58
+
+------
+ free -m 
+ -------
+  |-> using awk split multiple column
+  |-> calculate sum of free,used,total
+  
+ filter list .sh files 
+ display filename and filesize
+ calculate sum of file size
+ 
+ in command line - using awk split() - display time/mts/secs from date command
+
+---------
+ 
+ while:
+ do
+	memory.sh
+	...
+	echo "1. Total
+	2. Used
+	3. Free 
+	4. Quit"
+	read -p "Enter your choice" choice
+	case $choice in 
+	1) f1 ;;
+	2) f2 ;;
+	3) f3 ;;
+	4) exit ;;
+	*) echo "Invalid choice"
+	esac
+ done
+
+ -------------------
+
+[root@tse ~]#
+[root@tse ~]# cat -n file_size.sh
+     1   ls -l *.sh|awk '{OFS="\t";print $NF,$5}'
+     2   Size=(` ls -l *.sh|awk '{print $5}'`)
+     3   total=0
+     4   for v in ${Size[@]}
+     5  do
+     6          total=`expr $v + $total`
+     7  done
+     8  echo "Sum of .sh file size:$total"
+     9
+[root@tse ~]# date
+Thu Jul 21 05:39:29 UTC 2022
+[root@tse ~]# date|awk '{print $4}'
+05:39:35
+[root@tse ~]# date|awk '{split($4,A,":");for(x in A){print A[x]}}'
+05
+39
+55
+[root@tse ~]#
+ 
+----------------------------------------------------------------------------
+ 
+   command -->STDOUT/STDERR - display to monitor
+   -------
+   |
+   command >file  (or) command 2>file
+		
+   execute command - don't display to monitor
+		     avoid writing to file
+
+
+   /dev/null 
+   ---------
+    |->character type device file
+    |->clean up
+ 
+
+   execute command - don't display to monitor
+		     avoid writing to file
+
+   command >/dev/null 2>&1
+   if [ $? -eq 0 ];then
+	echo "Command execution is success"
+   else
+	echo "Command execution is failed"
+   fi
+   [root@tse ~]# ping -c 3 google.com >/dev/null 2>&1
+[root@tse ~]# echo $?
+0
+[root@tse ~]# ping -c 3 10.20.30.40 >/dev/null 2>&1
+[root@tse ~]# echo $?
+1
+[root@tse ~]#
+------------------------------------------------------------------
+
+ using sed demonstrate following grep commands
+	  ---
+	i) grep bash /etc/passwd
+	ii)ps -e|grep -vE "bash|python|d$" 
+	iii) grep -v "^$" IP
+
+ 1) sed -n '/bash/p' /etc/passwd
+
+ 2) ps -e|sed -r '/bash|python|d$/d'
+ 
+ 3) sed '/^$/d' IP 
+
+
+  file
+    ----
+    1010:bash:userA
+    userB:1034:bash
+    userC:334:ksh
+    userD:3433:bash:bash
+    BASH:userE:3423
+
+
+  sed 's/bash/ksh/gi' file
+  
+  [root@tse ~]# ps -e|sed -nr '/crond|pyhon|systemd|init/p'
+    1 ?        00:00:01 systemd
+ 1780 ?        00:00:00 systemd-journal
+ 1932 ?        00:00:00 systemd-udevd
+ 2640 ?        00:00:00 systemd-logind
+ 3135 ?        00:00:00 crond
+
+ sed -n '/^Pattern/,/^NextPattern/p' filename
+ -----------------------------------------------------------------------------------
+ function
+ ---------
+  |-> Code block 
+  |-> reusability 
+  |-> group of commands
+  
+  |-> function definition
+  |-> function Call - invoke a definition
+
+  |-> there is no main() 
+
+  Syntax:-
+  ---------
+  function functionName(){
+	code block
+  } 
+  function - keyword
+
+  functionName - user defined 
+
+  -----------------------
+  function file_details(){
+	echo "this is file block"
+	ls -l
+	touch f1 f2
+	mkdir d1 d2
+	ls -l f1 f2 
+	ls -ld d1 d2
+	echo "Exit from file block"
+  }
+
+  process(){  # the keyword function is optional 
+	echo "This is process block"
+	ps -f
+	echo "Exit from process"
+  }
+
+  -----------------------
+
+  How to invoke a definition?
+  functionName 
+
+  file_details # simple function Call
+  sleep 1
+  process # 2nd function Call
+
+ =>$FUNCNAME - variable - display name of your function
+   ----------
+	|->we can use inside the function
+	
+ recap commandline args variables --- function call arguments
+ -----		
+ ------------------------------------					
+ function f1(){
+	echo $1 ${2} ${15}
+	echo $@
+ 	echo $#
+ }
+ f2(){
+	echo $1 ${2} ${15}
+	echo $@
+	echo $#
+ }
+ echo $1 ${2} ${15}
+ echo $@
+ echo $#
+ f1 # simple function Call
+
+ f1 file1 file2 file3 file4 file5 # function call with arguments 
+
+ f2 10 20 30 40 50 60 70 80 90 # function call with arguments 
+ ----------------------------------------- 
+	
+
+
+ all the system commands are file (reg.file - ELF)
+ |
+ /bin/
+ /usr/bin/
+ /sbin/
+ 
+ which <command>
+ /bin/command
+ (or)
+ /usr/bin/command
+ (or)
+ /sbin/command
+
+
+  .<space><map your external file path>
+  call a definition
+ ----------------------------------------------------------------------
+ function call
+ nested call
+ call with args 
+ scope of the variable
+ return 
+ reuse existing defintion into external script(source . ./<filepath>)
+ -----------------------------------------------------------------------
+   
+ cat filename <== 
+ 
+ --------------			
+ fopen()
+ ...		<==  application code 
+ fclose()
+ --------------
+ 
+ ----------------------------------------
+	systemcall() <===
+	--------------
+	 |
+	filesystem
+	 |
+	Device Drivers
+
+ ----------------------------------------- 
+
+  RedHat Linux 
+  -------------
+   |-> rpm -ivh <packageName>-Version-release.arch.rpm		
+ 
+   repository - collection of rpm files
+    |
+   yum -> /etc/yum.repo.d/<reporfile.repo>
+	  --------------------------------
+
+   yum install <packagename>
+    |
+   refer this repo file - map to external repository
+			 ------------------------------//online
+   
+   Debian Linux 
+   -------------
+    apt-get install <packageName>
+   
+    yum install <packagename>
+    
+    y|N|d
+	
+    yum -y install <packagename>
+      
+ --------------------------------------------------------------
+
+ GNU C Compiler (GCC)
+
+
+ file: p1.c
+ -------------
+ gcc p1.c
+ |
+ a.out
+
+ file p1.c - ASCII /TEXT
+ file a.out - ELF 
+
+ gcc p1.c -o p1
+ 
+ gcc -Wall <== turns on all the compiler warning 
+
+ 1. pre-processing 
+ 2. object
+ 3. linker + object = executable object file
+		      ----------------------
+
+ gcc -E p1.c
+
+ gcc -c p1.c 
+ p1.o <== ELF - relocatable file 
+ -----	 	
+ gcc -E p1.c >p1.i
+ gcc -c p1.c  ->result is p1.o
+
+ gcc -S p1.c ->result is p1.s
+ 
+ gcc -o p1 p1.o
+ 
+ 
+
+  gcc -c p1.c p2.c p3.c p4.c
+  
+  p1.o p2.o p3.o p4.o
+ ----------------------//
+
+  gcc -o pobj p1.o p2.o p3.o p4.o 
+  
+  ./pobj
+   ------
+ ===============================================================================
+
+
+  
+
+
+
+
+
+
+
+
+
+
+		
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+	
+
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						
+ 
+ 
+  
