@@ -1,0 +1,80 @@
+Q1) Write a shell script : 
+
+using commandline argument 
+test input file is existing or not
+
+Validations:-
+
+================
+
+1. Commandline argument will accept single input file ./p1.sh IP.txt Ip1.txt
+
+2. Inputfile name and script file name both are different ./p1.sh p1.sh
+
+3. Commandline argument is not an empty ./p1.sh
+
+Note: use basename command - to strip a directory 
+example:-
+----------
+basename ./p1.sh # remove ./path
+p1.sh
+			
+
+Q2) Given array:
+Conf=("root:x:/root:/bin/bash" "userA:x:/home:/usr/bin/bash" "userB:x:/home:/bin/sh")
+
+using for loop - iterate the array items
+display login name and login shell name to monitor.
+
+Note: use awk
+
+Q3) Write a shellscript:
+read an employee name from <STDIN>
+read an employee id from <STDIN>
+
+display input details to monitor
+
+Note: Employee name format is title case format (ex: Arun )
+Employee name not allows space and special chars
+Employee ID starts with single uppercase chars followed by any 3 digits
+(ex: A124 B452) 
+
+create 3 different functions and demonstrate it.
+-----------------------------------------------------------------
+Q4. sample inventory file
+ 
+file: inventory.txt
+----------------------
+item code: sales count
+-------------------------
+101:10,20,30,40,50
+102:100,200
+103:150,250,230
+104:1000,20,25,500
+105:120,240
+---------------------------
+using awk - read a above inventory file 
+calculate sum of sales count - display item code and sum of sales count result
+to monitor.
+
+-------------------------------------------------------------------------------
+Q5. file: p1.sh
+    -------------
+    echo "ONE"
+    # echo "TWO"
+    # ----------
+    uptime # Display cpu LB
+    # ----------
+    echo "End of the line"
+    #--------
+
+using sed read a above input file(p1.sh) try the following tasks. 
+   i) delete all the comment lines(not a command) 
+   ii)delete all the empty lines 
+   iii) execute shell commands
+   iv) write command result to new external file.
+
+Note: try with single commandline (using -e option)    
+----------------------------------------------------------------------------------
+
+
