@@ -1,0 +1,584 @@
+file: p1.c
+-------------
+f1(){}
+f2(){}
+f3(){}
+..
+fn(){}
+---------
+ |
+ gcc p1.c -o p1
+ ./p1
+
+ do changes on f2() block
+ |
+ gcc p1.c -o p1 - compile entire code
+
+
+ file1.c   file2.c	file3.c  ..	fileN.c
+ -------   --------	-------		--------
+ f1(){}	    f2(){}	f3(){}		fn(){}
+
+ gcc -c file1.c file2.c file3.c .. fileN.c {enter}
+ 
+ file1.o file2.o file3.o .. fileN.o
+
+ do changes file2.c file
+ |
+ gcc -c file2.c  - compile particular file only
+ ----------------
+ 
+ gcc -o fobj file1.o file2.o file3.o ... fileN.o
+	----
+ ./fobj
+ ------------------------------------------------------------//(1)
+   
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ UserLayer: 
+ -------------------//shell-------
+ KernelLayer:
+ ---------
+ H/WLayer
+ 
+ shellscript - use case to automate commandline tasks
+ -----======
+  |
+  |->interpreter  - line by line
+  |
+  |->won't create any object file
+  |
+  |->shellscript file - ASCII / TEXT File - we can run directly 
+  |
+		
+ p1.py p1.java DBAppl p1.c p1.cpp webserverappln
+ ------------------------------------------------ on the linux
+  	
+
+
+ user tasks ->  execute python code ;java;c file
+		|
+		produce log files
+		|
+		collect log file - search some pattern
+		|
+		create new log write matched pattern only
+		-----------------------------------------//shellscript
+ 
+ file:p1.sh					file:p1.c
+ ------------					----------
+ echo "OK"					#include<stdio.h>
+ sfsdf						int main(){
+ sfas				Vs			printf("OK-1\n");
+ asfsda							...
+ assadf							...
+ sdfsd							printf("OK-N\n")
+ echo "Thank you"					return 0;
+ ------------					----------
+ chmod a+x p1.sh				gcc -E p1.c 
+ ./p1.sh
+ OK
+ command sfsdf not found
+ command sfas  not found
+ command asfsda not found
+ command assadf not found
+ command sdfsd not found
+ Thank you
+ 
+ C program
+ ---------
+   |->Application - gcc
+   |
+   |->system programming  - gcc 
+   |
+   |->Internals - module (file.ko) load/unload - gcc
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  
+ symbol
+ ------
+  |->label (variable,function,class etc.,)
+	
+  |Key  | Value|
+  |------------
+  |i    | 10
+  |display|0x1000
+  
+----------------------------------------------------------------------
+ Recap - Linux - File,Process
+
+ File - Data Under the Storage
+ |
+ File Types
+ |
+ File structure 
+ 			/
+			|
+	-----------------------------------------------------------
+	|	|	|	|	..	|	|	|
+	/bin    /usr	/etc    /dev		/root   /home  /mnt .. <= subdirectory
+	
+ |
+ Filesystem - structure - how the files are organized 
+
+
+ student@host~]$ uname >p1.log
+ 
+ student@host~]$ cat p1.log
+ Linux
+
+ student@host~]$ mkdir D2
+ student@host~]$ cd D2
+
+ student@host D2]$ whoami >p1.log
+
+ student@host D2]$ cat p1.log
+ student
+ student@host D2]$ cat ../p1.log
+ Linux
+
+ student@host~]$ cat /var/log/p1.log
+ sdfsa 
+ asdfds
+
+ student@host~]$ cat /mnt/usb/p1.log
+ test log
+
+ student@host~]$ cat /etc/shadow
+ Permission denined
+
+ student@host~]$ cat p2.log 
+ No Such file
+
+ Linux disk partitions 
+ -----------------------
+ 1.boot partition - bootloader info
+ 2. / partition   - entire file info
+ 3. swap partition - RAM insufficient - use swap space
+
+ ------------------//required partitions
+
+ 4. optional partition (/home (or) /var) - optional 		
+			-----	  -----	  
+ 
+  [ Linux 	server		]
+   |   |  	|  	|  |
+ user1 user2   user3
+
+
+  /home/user1/....
+  /home/user2/.....
+  /home/user3/...
+  -----
+	
+	
+  [Linux]
+   |
+  appln1 appln2 ... applnN 
+  |	 |	    |
+  log    log        log
+
+ /var/log/..
+
+  
+ partition tools
+ ----------------
+ fdisk 
+ cfdisk 
+ parted   
+ gparted  	
+  
+ root@host~]# fdisk /dev/xvdb {enter}
+ fdisk> n
+ +5G
+ w
+ ...
+ ... //commands
+
+ |
+ mkfs.xfs /dev/xvdb1
+ mkfs.xfs /dev/xvdb2
+ 
+ mkdir /D1 /D2
+ mount /dev/xvdb1 /D1
+ mount /dev/xvdb2 /D2		   |->directory
+ filesystem  type		mountpoint
+ ----------
+ /dev/xvdb1  xfs   ....    .... /D1
+ /dev/xvdb2  xfs	        /D2
+
+	
+ df - command - mounted filesystem
+ --------------------------------------------------------------------
+ 
+ Bootblock
+ Superblock
+ inodeblock
+ datablock
+
+ struct boot_block{
+	struct super_block{
+		....
+		....
+		....
+		....
+	}
+}
+ |SB |....|IB|
+
+ +----------+
+ | ib1    | -----------> ib1 | info about ib1 |
+ | ib2	  |------------> ib2 | info about ib2 |
+ | ib3    | -----------> ib3 | info about ib3 |
+
+
+ struct boot_block{
+	....
+	....
+	....
+	struct dev_sda1_superblock{
+				....
+				....
+				.....
+	}
+	struct dev_sda2_superblock{
+				...
+				...
+	}
+	.
+}
+
+vi p1.c 
+command >p1.log
+cp file1 file2
+mkdir d1
+....
+....
+-----------------------
+<indexNumber> filename
+ 
+plain(or)Text - data 
+ |
+meta data - info about data  - filesystem 
+---------
+ |->storage details - disk sector details(start-end)
+			...
+ |
+ raw data - storage 
+
+		+-----------------------+
+		|	Contents
+		+--------------------------+
+		|  	Chapter	| pageNo   |
+		|---------------|----------
+		  Introduction  |   1
+		|---------------------------
+		| FileManagement|  15
+		|---------------------------
+		| process	|  63
+		|--------------------------
+		| Device mgmt	| 115
+		|---------------------------
+		| User mgmt	|  223
+		|---------------------------+
+		
+ 63-114
+ |----|
+    |
+  process management details
+
+ 115-222
+ -------
+  |-device mgmt
+
+ 
+ /proc	  /		/D1	/mnt 		/.. <== mount point - directory
+ |
+ -------------------------------------------------------------
+
+ proc	 ext/xfs	nfs	 iso9660	vfat  <== FileSystem
+ ---------------------------------------------------------------
+ |	   |		|	    |		|
+ CPU 	  HardDisk	network	   CDROM	external <node>
+
+-------------------------------------------------------------------------------
+ 
+ ----------------------
+ 
+   
+ ---------------------
+  /dev/xvdb1
+  ---------- 
+  diskpartition
+
+  mkfs.xfs /dev/xvdb1 
+
+  mkdir /D1
+
+  mount /dev/xvdb1 /D1
+
+  /dev/xvdb1 - filesystem - xfs type - /D1
+				       ----
+  proc ->/proc 
+ 
+ 
+   FileDescriptor 				FileTable
+	|
+   FD=3 to 2 power 32/64 //success  ----->----  [permission check]FD,userdetails	
+   |						 |   |
+   FD=-1 //failed 				 |   |
+	|					 |   RC-updated
+	|		--------------<-----------   |
+	|		  permission denied	    inode
+	|
+	|		
+	|
+ -----<--
+ No such file 
+
+ open()=FD
+	|
+	FD == -1 ->Failed 
+
+ open()=FD
+	|
+	3
+	|
+	fileTable			
+
+  open("emp.csv")=3 ---------->Test permission -> RC:1
+  |
+  open("emp.csv")=4 ---------->Test permission -> RC:1+1 =>RC=2
+  |
+  
+ strace <command>
+ |
+ systemcalls()=FD
+ 
+ 
+ strace -t <command>
+ show time of day for each tracing output line
+  
+  File1
+  ------------------
+  abcdefgh
+  |
+  ------------------
+ 
+
+  fd1=open("File1",O_RDONLY); -> fd1=3 -->RC:1 ->inode ...
+   |
+  read(<fd1>,buf,3) 
+	    ---
+	     |
+	    abc
+  read(<fd1>,buf,3)
+	    |
+            def
+
+	  Vs
+
+   FD2=open("File1",O_RDONLY) ->fd2=3 --->RC:1 
+   FD3=open("File1",O_RDONLY) ->fd3=4 --->RC:1+1 =>RC:2 -
+   read(<FD2>,buf,3);
+		|->abc
+   read(<FD3>,buf,3);
+		|->abc 
+
+
+   int fd1,fd2;
+ 
+   fd1=3;
+
+   fd2=fd1;
+   ------------//simple initialization
+   fd1 ->3
+   fd2 ->3
+   	
+	Vs
+
+   fd2=dup(fd1);
+    |	      |
+    |	      3
+    |
+    4  
+   fd1,fd2 descriptor point to same file
+
+   open("test.log",O_CREAT|0666)
+   ....
+   close(fd)
+   
+ ---------------------------------------------------------------------------------
+ find - search a file (or) directory
+ ----
+ Syntax:-
+ --------
+ find <searchPath> -name <inputFile>
+
+ by default find - search a file in recursively
+
+ kumar@host D1]$ pwd
+ /home/kumar/D1
+
+ kumar@host D1]$ ls {Enter}
+ D2 D3 test1.log
+
+ kumar@host D1]$ ls -R {Enter}
+ ./D2 D3 test1.log
+ ./D2/L1/
+ ./D2/L1/test1.log
+ ...
+ ...
+
+ kumar@host D1]$ find . -name test1.log
+ ./test1.log
+ ./D1/test1.log
+ ./D1/L1/test1.log
+ ./D1/L1/L2/test1.log
+ ./D1/L1/L2/L3/test1.log
+ 
+ kumar@host D1]$ find -name "*.sh"
+ ....
+ ....
+ kumar@host D1]$ find -name "*.c"
+ -----
+
+
+ root@host~]# find /usr -name "*.c" 
+
+ root@host~]# find /usr/include -name "*.c"
+
+ ----------------------------
+ xargs
+ ------
+  |->Convert multiline ->Single line
+
+ 
+[root@tse sys_calls]# echo "one
+> two
+> three
+> four
+> five"
+one
+two
+three
+four
+five
+[root@tse sys_calls]# echo "one
+two
+three
+four
+five"|xargs
+one two three four five
+[root@tse sys_calls]# find -name "*.c"
+./p1.c
+./p2.c
+[root@tse sys_calls]# find -name "*.c"|xargs
+./p1.c ./p2.c
+[root@tse sys_calls]#
+ 
+ find -name <filename>|xargs <file manipulation Command>
+
+ find /etc -name "*.conf"|xargs ls -l
+ |
+ find /var/log -name "*.log"|xargs ls -l 
+ |
+ find /root -name "*.csv"|xargs grep -n sales 
+ 
+ 
+[root@tse sys_calls]# find / -name "stat.h"|xargs grep  -l "st_blk"
+/usr/include/asm/stat.h
+/usr/include/asm-generic/stat.h
+/usr/include/bits/stat.h
+---------------------------------------------------------------------
+
+ 
+ 
+ 
+ 
+
+ 
+   
+
+
+
+
+ 
+ 
+
+
+
+
+
+  
+ 
+ 		  	
+  
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+               
