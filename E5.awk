@@ -2,7 +2,7 @@ BEGIN{
 FS=":"
 }
 {
-^/[0-9]/{
+/^[0-9]/{
 split($2,Qty,",")
 t=0
 for(x in Qty){
