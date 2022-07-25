@@ -33,7 +33,7 @@ eidTest(){
 }
 
 display(){
-	echo -e "Emp name is:$1 emp id:$2"
+	echo -e "Emp name is:$1\t emp id:$2"
 }
 read -p "Enter an employee name:" ename
 nameTest $ename # function call with arguments
@@ -53,6 +53,3 @@ fi
 display $ename $eid
 echo # empty line
 echo "Exit from $0 script"
-
-
-read -p "Enter an employee name:" ename
