@@ -1,0 +1,613 @@
+ Recap
+ ------
+ Linux commandline -> shellscript 
+ -----------------------------------//user level
+ |
+ systemCall() //kernel level  #include<unistd.h>
+ |
+ - open()
+   read()
+   write()
+   close()
+   stat()
+     ..
+   ..
+ 
+ cat filename - shell understand format
+ |
+ fd=open(filename,O_RDONLY);
+ read(fd,buff,100);
+ -------------------------------//kernel understanding format
+  
+-----------------------------------------------------------------------------
+
+ Reg.file Dir.file
+ --------
+ read/write
+
+ r	w	x
+ 1	1	0  -> 6
+
+ 1	1	1  -> 7
+
+ Reg.file
+ ----------
+ 6 6 6		
+ 	      
+root user -> rw-r--r-- 
+
+non-root user ->rw-rw-r--
+
+ 6 6 6			6  6  6
+ 0 2 2 (-) root		0  0  2(-) non-root
+ ---------		---------
+ 6 4 4			6  6  4
+ ------			--------
+ |			|
+ rw-r--r-- 		rw-rw-r--
+ 
+ 
+ rwx -> 7
+
+ 7 7 7			7  7 7
+ 0 2 2(-)root	        0 0  2(-) non-root
+ -------		--------
+ 7 5 5			7  7 5
+ ------			--------
+ rwxr-xr-x		rwxrwxr-x 
+
+----------------------------------------
+
+/etc/login.defs
+chmod() -
+ 
+-----------------------------------------------------------------------------
+	    shellscript	    C                  c++              perl		
+user level: echo "Hello"   printf("Hello\n");  cout<<"Hello";   print "Hello\n";
+	    cp file1 file2
+	    		   scanf("%d",&a);	cin >>a;	$a=<STDIN>;     read  input() ....
+------------------------------------------------------						
+Kernel level:   systemcall()  
+		|
+		Internals - struct name - members
+	
+-------------------------------------------------------
+
+Process
+-------
+ ->process
+ |
+ ->attrs 
+ |
+ ->process table (struct ->task_t)
+ |
+ ->signal
+ 
+ process manipulation commands
+ -----------------------------
+ Linux - File,Process
+ 
+ File - Data - under the storage device
+ |			 ---------------
+ Process - Data - under the CPU
+			    ----
+			    ->fetch a data from memory
+			    ->stores to register 
+			    ->execute //process 
+ 
+ process table
+
+			process(ps)
+			  |
+    --------------------------------------------------
+    |						     |
+  1.user process				2.system process
+  ---------------				------------------
+ - by user					- by systemD
+ |						  |
+ - TTY:pts/port					- TTY:?
+ 
+ OFF ->ON ->POST ->MBR ->bootloader ->Kernel ->systemD (or) init 
+						  |	     
+						system process(?)
+						  |
+						getty(or) tty(?) //login :____
+								   password:___
+						  |
+						 shell (CLI) Vs Desktop(GUI)
+						  |
+					User I/O <= user process(pts/port)
+
+
+ |->After successfull login		|->Before user login 
+ 
+ start->R+->Exit			start ->R+ ..
+	||  ----				
+	stop			
+ parent is: working shell		parent is: systemD
+ 
+
+ root@host~]# ssh <remoteIP>{Enter}
+	      ----------------------//by user - user process (parent is working shell)
+	
+ root@host~]# mysql -u root -p {Enter}
+ mysql>	   ----------------------//by user - user process (parent is working shell)
+      
+ mysql> ...
+
+ ssh <remoteIP>  //sshd.service - R+
+
+ mysql -u root -p ..{Enter}  //mysqld.service -R+
+ ..
+
+ cron  - crond
+ 	
+ all the system process parent is systemD
+ systemD - PID is 1
+
+ systemctl -t service
+  
+ ----------------------------------------------------------------------------------
+ systemD	Vs 	init
+ -------		-----
+ RHL7,8,9,updated	RHL5,6
+ OL7 updated		DEB 11,12,..
+ DEB 16 updated 
+
+ working linux is RHL5 => uname ->Linux
+			  ps -e|head 2
+			  ...
+			   	init ->PID:1
+
+ working linux is RHL7 =>uname ->Linux
+			 ps -e|head 2
+			 ...
+				systemD ->pid:1
+
+ init		Vs		systemD (cgroup - control group - kernel subsystem)
+ -----				----------------------------------------------------
+  process1			  systemD
+				    |
+   |			----------------------------
+  process2		process1   process2 .... processN
+   |
+  process3
+   |
+ ..
+  |
+  ..
+
+ RHL5
+ root@host~]# service mysqld start
+
+	
+ RHL7
+ root@host~]# systemctl start mysqld.service
+          
+ daemon (or) service (or) systemprocess
+ ........................................ //by root user
+
+service <daemon> start|stop|restart|status <== by root user
+ 
+service <daemon> status <== by non-root users
+
+systemctl {start|stop|restart|status} <daemon>
+
+systemctl status <daemon>
+
+systemctl is-active <daemon>
+
+systemctl -t service {Enter} - to getlist of service(daemon)
+------------------------------------------------------------------------------
+
+/bin/ssh - ELF (command)
+
+/usr/lib/sshd.service (ASCII) - service file (or) unit file
+
+/etc/sysconfig/ssh.config (ASCII) - config file
+
+ service file (or) unit file format is INIformat
+
+ [ID]
+ KEY=VALUE
+
+------------------------------------------------------------------------------
+systemctl enable ab.service
+systemctl start ab.service
+systemctl status ab.service
+|
+shutdown -> start ->...booting time..automatically ab.service is started 
+
+systemctl is-active ab.service
+systemctl is-enabled ab.service
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+in linux env - write own service (service file)
+
+step 1: create a service file /etc/systemd/system/<filename>.service
+
+	example:
+	vi /etc/systemd/system/ab.service 
+	[Unit]
+	Description=OwnDescription
+	[Service]
+	ExecStart=/filepath/file <== running file (or) actual execution file
+	[Install]
+	WantedBy=multi-user.target
+	
+	save & exit
+
+step 2: reload daemon config
+
+	systemctl daemon-reload
+
+step 3: enable a service
+	systemctl enable filename.service
+
+step 4: systemctl start filename.service
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ps
+ps -f
+ps -e (or) ps -A
+ps -l
+	
+nice value range is -20 to 20
+
+	-20 -19 -18 .. - 2 -1 0 1 2 3 .. 19 20
+	--------------------- | ---------------
+		|	  default	 |_low
+		High	   nice value
+
+--------------------------------------------------------------------------------
+top
+htop
+iotop
+
+ top ->Running - press 'P' -> see %CPU
+		 press 'M' -> see %MEM
+
+ top -p <PID>,<PID>,<PID>
+
+ q - quit
+ 
+ ping  127.0.0.1 >/dev/null
+ ..
+ 
+ command &
+
+ [EventID] ... <PID>
+  -------
+ 
+ 
+[root@tse Examples]# ps
+  PID TTY          TIME CMD
+ 4365 pts/2    00:00:00 bash
+ 4400 pts/2    00:00:00 ps
+[root@tse Examples]#
+[root@tse Examples]# sleep 10 &
+[1] 4401
+[root@tse Examples]# ps
+  PID TTY          TIME CMD
+ 4365 pts/2    00:00:00 bash
+ 4401 pts/2    00:00:00 sleep
+ 4402 pts/2    00:00:00 ps
+[root@tse Examples]#
+[1]+  Done                    sleep 10
+[root@tse Examples]# ps
+  PID TTY          TIME CMD
+ 4365 pts/2    00:00:00 bash
+ 4404 pts/2    00:00:00 ps
+[root@tse Examples]# ping 127.0.0.1 >/dev/null &
+[1] 4405
+[root@tse Examples]# ping google.com >/dev/null &
+[2] 4406
+[root@tse Examples]# ps
+  PID TTY          TIME CMD
+ 4365 pts/2    00:00:00 bash
+ 4405 pts/2    00:00:00 ping
+ 4406 pts/2    00:00:00 ping
+ 4408 pts/2    00:00:00 ps
+[root@tse Examples]# ps -f
+UID        PID  PPID  C STIME TTY          TIME CMD
+root      4365  4363  0 06:06 pts/2    00:00:00 -bash
+root      4405  4365  0 06:11 pts/2    00:00:00 ping 127.0.0.1
+root      4406  4365  0 06:11 pts/2    00:00:00 ping google.com
+root      4409  4365  0 06:11 pts/2    00:00:00 ps -f
+[root@tse Examples]#
+[root@tse Examples]#
+[root@tse Examples]# jobs
+[1]-  Running                 ping 127.0.0.1 > /dev/null &
+[2]+  Running                 ping google.com > /dev/null &
+[root@tse Examples]# cat >pt.log &
+[3] 4410
+[root@tse Examples]#
+
+[3]+  Stopped                 cat > pt.log
+[root@tse Examples]# jobs
+[1]   Running                 ping 127.0.0.1 > /dev/null &
+[2]-  Running                 ping google.com > /dev/null &
+[3]+  Stopped                 cat > pt.log
+[root@tse Examples]#
+
+ to transfer to foreground
+
+ fg %<EventID>
+  
+
+
+ ctrl+C - Exit signal
+ |
+ ctrl+Z - Stop signal
+
+
+ bg %eventID - execute process in background only
+
+ Kill a process
+ ----------------
+ 
+ kill -9 <PID>
+      --
+      |
+     SIGNAL - kill signal
+ -------------------------------------------------------------------------------- 
+ P1(Parent-process) - PID,PAddress,Pstate etc., //Process Table  - struct 
+ |			
+ P2(Child-Process)  - PID,PAddress,Pstate etc., //Process Table  - struct
+
+   ps -f
+  PID   PPID
+  
+  
+  P1 - PID:101 - 0x5424 state:Running - Wait
+  | 				|
+  P2 - PID:102 - 0x1456 state:Running -  Active process
+
+ root@host~]# Working shell is active 
+
+ root@host~]# vi p1.c{enter}
+ 
+ vi - editor is active process
+
+ ..
+
+ root@host~]# gcc p1.c -o p1
+
+ root@host~]# ./p1
+					R+
+ 					 |
+  P1 - PID:101 - 0x5424 state:Running - Wait		<-----------
+  | 				|				   |
+  P2 - PID:102 - 0x1456 state:Running -  Active process ... Exit -- EXIT SIGNAL(SIGCHLD)
+
+ --------
+ P1 - Wait <== killed by iterrupt (or) signal
+ |
+ P2 - R+ ... <== systemd(or) init act as a parent
+ ---------
+  |->Orphan process
+
+ PID	PPID		...	
+ 102	101		...
+ ...
+ 102	1		... <== 
+
+
+ P1 - 
+ |	
+ P2 - ... exit //zombie
+
+ P1 - 		
+ |		    //blocked
+ |		     |
+ P2 -->R+... exit----   //P2 entry details is exists in process table
+ 			
+ --------------------------------------------------------------------------------
+  
+ ps 
+  -f
+  -l
+  -e (or) -A
+  
+ top
+ htop
+ jobs
+ fg %<event ID>
+ bg %<event ID>
+ 
+ kill -9 <PID>
+ 
+ jobs 
+  -p - display process ID 
+  -r - display running process
+  -s - display stop process 
+
+ Code area - which contains executable(text) portion of a process
+ Data area - which is used by a process to contain static data
+ Stack area - which is used by a process to store temporary data
+ User area - hold info about a process
+ Page tables - which are used by the memory management system
+
+ -----------------------------------------------
+ fork() - duplicate a new process 
+ getpid() - to obtains current process PID
+ getppid() - to obtains parent process PID
+ wait()   - waits for a child process
+
+ exec() - replaces the code,data and stack of a process
+
+ exit() - exit the process
+
+ ---------------------------------------------------
+ 
+ root@host~]# echo $$  
+ 3224
+	
+ root@host~]# ./P4(current process) 
+  	      ----------------------
+		|->16413 (PID) - parent ID is:3224 
+		   -----		      -----
+		   getpid() 		      getppid()
+		
+		16413 - P1(parent)
+		|
+		16414 - P2(child)
+ 
+
+ process creation systemcall is fork() - 2 power n
+
+ fork()
+ fork()
+ printf("Hello");    2 power 2 -> 4 times
+
+
+ fork()
+ fork()
+ fork()
+ print("Hello");   2 power 3 ->8  times ->Hello
+
+ ---------------------------------------------------------------
+ int wait(int *status) -returns the PID of the child that terminated 
+  # refer: P10.c  - code
+ --------------------------------------------------------------------
+
+ COW - Copy On Write 
+
+ Linux - exec() lib function - stdio.h file 
+
+ P1 - PID:101 - 0x4567
+ |
+ P2 - PID:102 - 0x9595
+
+
+  Vs
+
+ P1 - PID:101 - 0x4567  - copy write on private segment
+ |		 |	
+ P2 - PID:102--- 
+
+ int execl(char path, argument,NULL)
+ 
+ ---------------------------------------------------------------------------------
+ 
+
+
+
+
+ 
+
+
+
+
+
+
+
+ 
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+ 
+
+ 				
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+ 			 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
