@@ -1,0 +1,566 @@
+Signals
+|
+shared object file(.so)
+|
+proc 
+|
+IPC 
+----
+ |->unnamed pipe
+ |->named pipe (or)FIFO
+ |->system V IPC
+	|->message queue
+	|->shared memory
+	|->semaphore
+Threads
+-------
+|
+debugging tools
+others tools 
+|
+Kernel module 
+|		
+->DD
+|
+SElinux
+==============================================================================
+process
+--------
+getpid()
+getppid()
+fork()
+wait()
+exec()
+|
+signals 
+--------
+ |->signals are notifications sent to a running process
+
+press Ctrl+C = Exit signal
+press ctrl+Z = Stop Signal
+ 
+	P1(process)
+	------------
+	
+	signal() - system call - invoke the signal action
+	---------
+	signal(SIGNAME,Handler);
+			|
+			|
+		    int Handler(int signalNo){ 
+			Action
+		    }
+
+ 	Process(P1)
+	-----------
+	mov
+	push
+	..
+	..
+	.. 		
+	mov <==signal	- handler(){ action }
+	..
+	..
+
+  -> each signal have single handler
+  |
+  -> when a signal is sent to process,the OS stop the process immediately
+     will perform signal action.
+		  ---------------
+  ->			|
+			Call handler - execute the tasks
+  |
+  ->  resume the process
+  
+  -> Signals are not interrupts
+	interrupts are sent to OS by H/W
+	signals are sent to processes by OS
+
+  -> each signal - signal number 
+		  ---------------
+			|->symolic name of signal 
+  -> <signal.h>
+
+  -> list of signals 
+
+     kill -l
+
+  signal name starts with SIGXYZ
+
+  kill -9 <PID>
+  ----
+    |
+ signal(SIGKILL,Handler);
+		|
+
+		int Handler(int signo){
+			signo is 9
+			..
+			..
+		}
+
+ Ctrl+C - Exit ( exit signal - non-catchable signal)
+ |
+ Ctrl+Z - Stop //we can resume the process
+
+
+ Ctrl+\ - OS will send abort signal to the running process
+
+ ------------------
+ int main(){
+	main();
+ }
+ ------------------
+ gcc p1.c -o p1
+ ./p1
+ -----//(process) <=== SIGSEGV
+			|
+			this signal will inform to process(./p1) there is no stack
+			-segment fault is occured 
+
+ ping 127.0.0.1
+ 
+ ...
+ press Ctrl+C <=== SIGINT 
+	
+ alarm() - generate a SIGALRM signal 
+
+ alaram(int secs) - SIGALRM - signo is 14
+ -----------------  =======
+ 			|->after given timesecs - process will get terminate
+ 
+			
+ 		
+ --------------------------
+
+ handler1_parent(){ Parent - received a response signal from child}
+	 
+ handler2_child(){ kill(getppid(),SIGUSR1) }
+ 
+		
+ pid=fork();
+
+ pid == 0 
+	signal(SIGUSR1,<handler2_child>)
+	pause()
+ else
+	signal(SIGUSR2,<handler1_parent>)
+	..
+	parent send signal to child ->kill(pid,SIGUSR1)
+	..
+	pause()
+ 	
+ 
+ 
+ 		
+	    
+
+ //parent child communication with signals
+
+#include "ab.h"
+void handler_parent(int signo){
+	printf("Parent - Received a response signal from child\n");
+	printf("PID:%d\n",getpid());
+}
+
+void handler_child(int signo){
+	printf("Child - Received a signal from parent\n");
+	sleep(2);
+	kill(getppid(),SIGUSR1);
+}
+int main(){
+ pid_t pid;
+ pid=fork();
+ printf("PID=%d\n",pid);
+ if(pid == 0){
+	signal(SIGUSR1,handler_child);
+	printf("Child - Waiting for signal\n");
+	pause();
+ }else{
+	signal(SIGUSR1,handler_parent);
+	sleep(1);
+	printf("Parent-Sending signal to child\n");
+	kill(pid,SIGUSR1);
+	printf("Waiting for response\n");
+	pause();
+ }
+	return 0;
+}
+------------------------
+ 
+
+ signal() - Handler - action 
+
+
+ P1 
+ ...
+ ...
+ signal - action - P1 changed - signal is raised action is taken
+
+ Vs
+
+ P1
+ ..
+ ..
+ signal is raised - process(P1) is ignored the signal
+ ..
+ ..
+ ..
+
+ SIGCHLD - child exit status info to parent
+					|
+					parent is ignoring this signal(SIGCHLD)
+					|
+ 				then child will become to zombie 
+ SIG_IGN
+ 
+---------------------------------------------------------------------------
+ # Suspending & Resuming processes
+ ------------------------------------
+ P1 - R+
+ |
+ P2 - R+
+ 
+ kill(<P1-PID>,SIGSTOP);
+ ...
+ kill(<P1-PID>,SIGCONT);
+ ..
+ ..
+ kill(<P1-PID>,SIGINT);
+ ..
+ kill(<P2-PID>,SIGINT);
+
+ 
+ #include "ab.h"
+ int main(){
+  int pid1,pid2;
+  pid1=fork();
+  
+  if(pid1 == 0){
+	while(1){
+		printf("pid1 is running\n");
+		sleep(2);
+	}
+  }
+
+  pid2=fork();
+    
+  if(pid2 == 0){
+	while(1){
+		printf("pid2 is running\n");
+		sleep(2);
+	}
+  }
+  sleep(3);
+  kill(pid1,SIGSTOP); //suspend pid1-process
+  sleep(3);
+  kill(pid1,SIGCONT); //Resume pid1-process
+  sleep(3);
+  kill(pid2,SIGSTOP); //suspend pid1-process
+  sleep(3);
+  kill(pid2,SIGCONT); //Resume pid1-process
+  sleep(1);
+  kill(pid1,SIGINT);
+  kill(pid2,SIGINT);
+  return 0;
+ }
+ 
+ ------------------------------------------------------------------------------
+
+ sigaction(SIGNAME,&struct_var)
+		   -----------
+
+ int handler(int sigNo){ action }
+
+ struct sigaction sa;
+ sa.sa_hander=handler;
+ ------------
+
+ sigaction(SIGNAME,&sa);
+
+ sigaction(SIGNAME,&sv) == -1 { failed - Handle the error }
+
+ --------------------------------------------------------------------------
+ sigemptyset()
+ sigprocmask()
+ sigpending() 
+ ----------------
+ =======================================================================
+ shared object file (.so file)
+ ------------------------------
+ 
+ in Linux object files - 3 object files
+ ----------------------------------------
+ 1. linked object file - executable file(gcc p1.c -o p1) - p1 is ELF - executable
+
+ 2. relocatable object file - non-executable file (gcc -c p1.c) ->p1.o is ELF - not -executable 
+
+ 3. shared object file - executable gcc -shared p1.o  -fPIC p1.so 
+ 
+ winX - .dll ==> in Linux ->.so 
+           
+ winx -> PE format Vs   Linux ->ELF (PIC) 
+ 			--------------------
+			.so 
+ 
+ m1.c m2.c m3.c m4.c ... mN.c 
+ |	|   |	|	 |
+ 
+ m1.c m2.c
+ ---- -----
+ f1() f2()			-	python programming
+					.....................
+					 python code
+					 ->invoke c function Call()
+ |
+ m1.o  m2.o
+  |     |
+  |-----|
+    |
+   m12.so ---------load------------------> m12.so  ---- 
+
+					..
+ 
+ ---------------------------------------------------------------------
+
+
+		[        file.so			]
+		         ========
+		 |	|	  |		|
+		[App1]  [App2]   [App3]   .. [AppN]
+		 |
+		cmd1	cmd2	  cmd3		cmdN
+		 
+ strace <command>
+ ...
+ ...
+ 
+ ldd filename
+ ---
+ -	
+ ----------------------------------------------------------------------
+ 
+ chroot  - change root 
+ 
+ 	/ <== 	
+	
+ step 1: create a new directory (anonymous / directory)
+
+ step 2: copy bash shell (parent process - user creation) to jail directory
+	 ---------------
+		|->/bin/bash
+		|
+		|->ldd =>.so 
+ 
+ |
+ step 3: copy required bin files (commands - gcc gdb nm ...) 
+ |
+ chroot -> 
+ ----------------------------------------------------------------------
+ 	  
+ proc filesystem
+ -----------------
+ |->virtual filesystem
+
+
+
+ /proc	 <== user view		
+  	
+  |		
+  |
+  |
+ -------------------------------------------------------------
+ proc		ext4/xfs	nfs		iso9660 <= cat /proc/filesystems
+  |		|		|		|
+ CPU		Storage
+ RAM
+
+ Appln 	-> R+ .... required to increase segment level => /proc 
+---------
+ Linux (kernel)
+
+  /etc		Vs		/proc
+  ----				-----
+ ->not virtual file
+ ->configuration		-> virtual files (not storage file)
+   directory			-> current state of kernel details
+ 
+ ->do any changes		-> do any changes inside the /proc directory file
+   inside the /etc		   (using redirection (or) sysctl utility)
+   directory file 		   the changes will effect the system immediately.	
+   won't effect the system	-> reboot is not required 
+   immediately.			-> only runtime (not permanent)
+  -> reboot is required 		
+  -> permanent changes
+
+
+
+ sysctl -w "KernelParam.subdir.subdir.filename=UpdateValue"
+ ----------
+ |
+
+ /etc/sysctl.conf 
+ ....
+ ....
+
+ OS - running time any changes is required 
+ echo "Value" >/proc/sys/kernel/.... 
+
+  (or)
+ sysctl -w "kernel....."=Value
+
+ memory mapping of particular process
+ pmap <PID>
+
+  (or)
+ cat /proc/<PID>/maps 
+
+ 
+=====================================================================================
+ process+signal+proc (sys/resource.h)
+ 		|->sysctl -a
+		|->sysctl -w ..
+		
+ ======================================
+  |
+  IPC 
+  ===
+  ->How two processess exchange information with each other.
+
+ 
+ P1		Px
+ |		|
+ 0x123		0x944
+ (address)	(address)
+ 
+    |----IPC------|
+	
+  pipes
+  ------
+ 
+ in commandline
+ ----------------
+ cat /etc/passwd|wc -l
+ 
+ ps -e|grep bash
+
+ ps -e|grep system|wc -l
+
+ command1     | command2
+   |	    ^ | ---------
+  o/p	    | |
+   |---------------
+ 
+ command1 is writing ... command2 is reading
+
+ [ps -e] -->[pipe]----->[wc -l]
+	
+ ps -e|head|grep d$|wc -l 
+ .....               
+  |
+ write  read
+	write read
+	      write  read 
+		     write ->STDOUT
+ 
+ pipe() - systemcall
+ ------
+  |->unnamed pipe
+  |->unidirectional communications 
+  
+  unnamed pipe communication systemcalls() are 
+  ---------------------------------------------
+	1.fork() - process creation
+	2.pipe() - create pipe 
+	3.read() - pipe-read - P1  
+	4.write()- pipe-write - P2
+	5.close()- close the descriptor 
+		
+  		
+     1st - create two process
+     2nd - create pipe =>int pipe(int fd[2]); //creates an unnamed pipe
+						returns two file descriptors
+	fd[0] - read
+	fd[1] - write
+
+ #->   Signal =>SIGPIPE signal //write fails 
+ #
+ 	
+ #include "ab.h"
+ #define READ 0
+ #define WRITE 1
+	  
+ int main(){
+	int fd[2];
+	char var[20];
+	int r;
+	pipe(fd); //create an unnamed pipe
+
+	if(fork()==0){  //Child - write operation
+			
+		close(fd[READ]);
+		write(fd[WRITE],"Message",15);
+		close(fd[WRITE]);
+	}else{  //parent - read operation
+		close(fd[WRITE]);
+		r=read(fd[READ],var,15); //receive
+		printf("%d",r);
+		close(fd[READ]);
+	}
+    }
+			
+ 
+  P1  ./pipe	     read  <--- |
+  |			        |
+  P2   <newprocess> - write -->-
+    
+  P2|P1
+  |   |->read (read from pipe content)
+ write
+-----------------------------------------------------------------------
+
+	
+  
+
+
+
+
+
+  
+ 	 
+
+
+	 		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
