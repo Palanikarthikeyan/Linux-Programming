@@ -1,0 +1,214 @@
+ recap
+ -----
+ ->process 
+   
+  ps -l
+
+    NI <== nice
+
+  -20 to +20 <== priority value
+
+ default nice value is zero(0)
+ 
+ in command line -> nice --19 command
+ 			 |----
+			 | number(-19)
+			option		
+
+		   nice -19 command
+			---
+			 |
+			option(19)
+
+  -> nice() system call
+
+  int nice(int number); 
+
+ int main(){
+	printf("Current priority\n");
+	system("ps -l"); 
+	nice(10);
+	printf("Running priority\n");
+	system("ps -l");
+	nice(-15);
+	printf("Running priority-15\n");
+	system("ps -l");
+	return 0;
+  }
+ ------------------------------------------------------------------
+
+ unnamed pipe =>  | 
+
+ pipe()
+ 
+ int pipe(int fd[2]);
+
+ fd[0] - read
+ fd[1] - write
+
+ ps -e|wc -l
+ -----
+  |w    | r
+ o/p----
+  
+ SIGPIPE 
+
+ pipe()
+ read()
+ write()
+ -----------------------------------------------------------------------------
+ named pipe - file 
+ -----------  
+  |-> FIFO - file based 
+  
+ in commandline -> mkfifo <filename>
+		   file <filename>
+		   pipe (or) fifo file
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+root@krosumlabs:~# 
+root@krosumlabs:~# echo $PS1
+\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\u@\h:\w\$
+root@krosumlabs:~# 
+root@krosumlabs:~# 
+root@krosumlabs:~# PS1='@'
+@
+@
+@pwd
+/root
+@PS1='#'
+#
+#
+#PS1='\u@\h:'
+root@krosumlabs:
+root@krosumlabs:
+root@krosumlabs:PS1='\u@\h \w'
+root@krosumlabs ~
+root@krosumlabs ~
+root@krosumlabs ~PS1='[\u@\h \w]'
+[root@krosumlabs ~]
+[root@krosumlabs ~]
+[root@krosumlabs ~]PS1='[\u@\h \w]#'
+[root@krosumlabs ~]#
+[root@krosumlabs ~]#
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ mkfifo <filename>  => mknod(<filename>,S_IFIFO)
+ 		       chmod(<filename>,0660);
+ 
+ userA: cat<filename  => fd=open("<filename>",O_RDONLY);
+		      => f1(fd,str);
+			 ....
+			 close(fd)
+
+ int f1(fd,str){
+	..
+	do{
+		n=read(fd,str,1);
+
+	}while(n>0 && *str != NULL);
+ } 
+	
+ ----------------------------------------------
+ mkfifo >filename   fd=open(<filename>,O_WRONLY);
+		    ..
+		    for(){
+		    write(fd,message,len);
+		    sleep(2);
+		    }
+		    close(fd)
+  ----------------------------------------------------
+			
+  unamed pipe =>  process1|process2
+  named pipe => file based (1 to 1 )
+
+  |
+   _________________ 
+  |_________________|
+ send		   receive 
+                    
+ ftok("anyexistingfile","anysingleChar") -><encryptedKey>
+ ----
+ 			
+ #include<sys/ipc.h> 
+ #include<sys/msg.h>
+
+ 	
+ #include<sys/ipc.h>
+ #include<sys/shm.h>
+
+		+------------------+
+  		|	p1<->p2	   |	=>p1,p2
+		+------------------+
+
+	attach				deattach
+ 
+ 
+
+ wait()
+ CS - Critical Section Code
+ signal() 
+
+ wait(s): while s<=0 do 
+		no operation
+		s:=s-1
+
+ signal(s) s=s+1
+
+ #include<sys/ipc.h>
+ #include<sys/sem.h>
+ 
+ semget() ->semaphore id (semid)
+ 
+ semget(key,nsems,semflag)
+ semop()
+
+ struct sembuf{
+	..
+ }
+ 
+
+	[ ]		[ ]  		[   ]
+	attach		attach		attach
+	..		...		...
+	deattach	deattach	deattch
+	--------------------------------------------//shmaction only
+ 
+  			Vs
+
+
+	[ ]		[ ]  		[   ]
+	attach		attach		attach
+	..		...		...
+	# locked	# locked	# locked  <== semaphore
+	deattach	deattach	deattch
+	# unlocked 	# unlocked	# unlocked <== semaphore
+	--------------------------------------------//shmaction only
+ 
+  ----------------------------------------------------------------
+ 
+  union semun{
+
+  }
+  struct sembuf p={};
+  struct sembuf v={};
+
+  int main(){
+	semid=semget();
+	..
+	union semun uv;
+	uv.val=1;
+	semctl(semid,0,SETVAL,uv)
+	...
+	application code
+	...
+	semop(semid,&p,1);
+	putchar(s)
+	semop(semd(id,&v,1);
+	..
+	..
+	parent section code
+	...
+	...
+ }
+ abcdPOSIX  
