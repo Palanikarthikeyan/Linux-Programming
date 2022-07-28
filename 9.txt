@@ -1,0 +1,524 @@
+ 
+ Threads
+|
+memory - systemcall()
+|
+ gprof
+ |
+ make file
+ |
+ Kernel-module 
+ 
+----------------------------------------------------------------------------------
+ process - fork() wait() getpid() getppid() exec() 
+	   pipe() mknod() mkfifo() system V IPC
+	   ----------------------- =============
+				    |->system V IPC struct - attributes
+				       -------------------
+				     |->include ipc header files
+				     |->include existing IPC structure - struct variable
+				     |->msgsend() msgrcv()
+				     |-> IPC - systemcalls()
+ ------------------------------------------------------------------------------
+ Thread - execution unit
+
+ process = DATA + Address 
+ |         ......
+ Thread = DATA
+          .....
+
+	
+ P1 - Parent - Wait			T1 - R+  
+ |  					|
+ P2 - Child - Active R+			T2 - R+
+ 
+ 
+    p1 - (PID:101 - Address:0x1234)
+    |
+    |- t1 t2 t3 ..tn 
+       --------------
+ 	|  |  |   |
+  	virtual CPU
+ 
+ create a new process - fork()
+  P1 - data + Address				t1 - data ...
+  |					Vs	|
+  P2 - data + Address 				t2 - data ...
+
+ 	t1
+	|
+  ----------------		Vs	t1
+  |   |  ..     |  			|
+  t2  t3 ..     tn 			t2
+					|
+					t3
+					|
+					t4
+ --------------------------------------------------------------------
+ 
+  root@host~]# vi p1.c {enter}
+  ...
+  ... active process is vi - parent is bash (wait)
+
+  :wq
+  root@host~]# now parent(bash) is active
+
+  root@host~]# ./obj {enter} <== newprocess(child-active process) - parent is bash(wait)
+  ..
+  ..
+  ..
+  root@host~]# 
+
+  file: p1.c
+  --------------
+  f1(){ sleep(60);}			f1(){sleep(60);}
+  f2(){}				f2(){}
+					
+  main(){			Vs	main(){
+	f1();					f1();
+	sleep(5);				sleep(5);
+	f2();					f2();
+	..					..
+ }					}
+ --------------------			---------------
+ ./obj(Process)				./obj(process)
+					 |  |  |
+					 t1 t2 t3 .. tn
+ ----------------------------------------------------------------------------------
+ POSIX 
+ command 
+ command -option
+	  ------
+
+ ls
+ ls -l
+    -i
+    -r
+    -lr
+    -t
+ POSIX - pthread 
+ gcc p1.c -lthread (or) gcc -pthread p1.c 
+
+  pthread.h
+  
+  pthread_ 
+
+------------------------------------------------------------------------------------
+ #include<pthread.h>
+ 
+ pthread_t 
+ create a new thread =>  pthread_create()
+ 			 ------------------
+
+
+ pthread_create(pthread_t &thread,attributes,subroutine,args)					
+				  --NULL---		-NULL-
+ 
+
+ pthread_join(thread_id,attrs)
+
+ pthread_self() 
+ pthread_equal(t1,t2) - both threads are equal 
+ 
+ r=pthread_attr_init(pthread_attr_t *tarr)
+  
+ scope 
+ detachstate
+ stackaddr
+ stacksize
+ 
+ pthread_create(&tid,&r,function,args);
+		     |
+
+ pthread_join(tid,r) 
+ 
+  
+ 
+
+ fork()		Vs	pthread_create() //LWP - there no new address space creation
+ -----
+ |-> new address
+     space
+  			
+			
+
+  	t2 - f1
+	|
+	t1 - main 
+
+		      pthread_attr_t attr
+			|
+   ->initialize it => pthread_attr_init(&attr)
+  			|
+		      pthread_attr_setdeatchstate()(&attr,...)
+
+   |
+   ->pthread_create(&tid,&att,threadname,args);
+
+   ->pthread_join(&tid,&att)
+		..
+		..
+  pthread_setconcurrency() 
+  | 
+ -----------------------------------------------------------------------------------------
+
+ 1. creating threads 
+ 2. thread synchronization -? - with multiple threads 
+
+ p1	p2
+ |	|
+ 0x13  0x45
+  |-IPC-|
+    ===
+ t1 t2  t3 t4
+
+ [ t1 t2 t3 t4 ]
+   ...........
+   
+ mutex(mutual exclusion) - lock /unlock (acquire/release)
+
+	[ ]
+ c=1
+	[t1]
+ c--
+ c=0    [t1]
+	  |-->--
+	[ ]
+ c++
+ c=1   [ ]
+ 	
+	[t2]
+ c--
+ c=0
+ c=(0,1)
+    ....
+  lock
+   access data - critical section 
+  unlock 	 
+
+ 1st - initialize mutex object - pthread_mutex_init() (or) pthread_mutex_t v=PTHREAD_MUTEX_INITIALIZER
+
+ 2nd - lock -> pthread_mutex_lock()
+ |	CS
+ 3rd - unlock ->pthread_mutex_unlock() 
+
+ finally -> destroy mutext object(reference) => pthread_mutex_destroy()
+ 
+ void *f1(){
+
+	pthread_mutex_lock(&v);
+	  CS - critical section code 
+	pthread_mutex_unlock(&v);	
+
+ }
+
+---------
+ Conditional variable 
+ ---------------------
+		
+  t1 <---->	 	t2  <---->	t3  //Conditional variable 
+  |		 	|		|
+  scanf("%d\n",&n);  ->n=n+10		printf("%d\n",n);
+
+  
+ 1st - initialize conditional variable  //pthread_cond_init(..)
+ 2nd - wait - pthread_cond_wait()
+ 3rd - signal - pthread_cond_signal() Vs pthread_cond_broadcast()   
+ ..
+ finally - destroy conditional variable =>pthread_cond_destroy()
+
+ ------------------------------------------------------------------------------
+ 
+  global variable 
+  |	    
+  t1 t2 t3 .. tn
+  
+ int gv=0;
+ void *f1(){
+	int i,r;
+	r=rand()%2;
+	for(i=0;i<5;i++){
+	printf("\t Thread ID:%x\n",pthread_self());
+	sleep(r);
+	gv++;
+      }
+	printf("Exit from %s\n",__FUNCTION__); 
+  }
+
+ void *f2(){
+	int i;
+	i=0;
+	printf("This is %s thread block\n",__FUNCTION__);
+	while(i<5){
+		gv--;
+		i++;
+	}
+	printf("Exit from %s\n",__FUNCTION__);
+ }
+ int main(){
+   pthread_t tid1,tid2;
+   
+   pthread_create(&tid1,NULL,f1,NULL);
+   pthread_create(&tid2,NULL,f2,NULL);
+   pthread_join(tid1,NULL);
+   pthread_join(tid2,NULL);	
+
+   return 0;
+  }
+
+ --------------------------------------------------------------
+ 
+ thread - create - mutliple threads
+ |
+ thread - synchronization - mutext & conditional variables
+			
+ ---------------------------------------------------------------------
+  socket programming
+  =====================
+   |
+  client <--> server 
+
+ the domain
+ ----------
+ AF_UNIX 
+ AF_INET
+ AF_NS
+ PF_UNIX
+ PF_INET
+
+ AF - Address Family
+ PF - protocol Family
+
+ the type = depends on the communication exists - STREAM ,DGRAM
+
+ the protocol   - TCP / UDP
+
+ TCP
+ ----
+ server					client
+  |					|
+ socket <---------------------------> socket
+ socket()			      socket()
+  |	
+  bind					connect
+  bind()				connect()
+  |
+ listen
+  listen()
+  |
+ accept -------------->------------------
+ accept()
+  |
+  read/send				write/recv
+  ..					..
+  |					|
+ close					close
+ close()				close()
+
+ sd=socket(doamin,type,protocol);
+ 
+ bind(sd,addrss,..);
+ listen(sd,add);
+ new_sd=accept(sd,address);		connect(sd,addd..)
+ -------------------------------------------------------------------
+ server				client
+ ------				--------
+ socket()			socket()
+ bind()				send/recv
+ send/read			close()
+ close()
+ --------------------------------------------------------------------
+ memory
+ --------
+
+ 32 bit
+ +------------+
+ | Kernel (1G)|
+ |------------|
+ |	      |
+ | user (3G)  |
+ +------------+
+
+
+ 64 bit
+ -------
+ | Kernel 128T |
+ |-------------|
+ |             |
+ | user        |
+ |-------------+
+
+ Process - (VA)	------ PA
+		 |
+	        MM
+
+
+  Virtual Memory 				Physical memory
+
+	-------------- [ Page Table ]-----------------
+				|
+				MMU
+
+  main
+  f1
+  f2
+  sqrt
+  fact       
+  ............LA (segment+offset)
+                    |
+                   segment
+
+  CPU ->LA  
+        |s|offset|
+     
+        |base|limit|
+          
+                + =>PA ->
+
+   0x1234  --- 1234
+   ........    .....
+
+	 Virtual Memory space distribution
+
+		--------------
+		|kernel space|
+		|------------|
+		|   ...      |
+		--------------
+		|shared libs | <== printf() scanf() sqrt()
+		|------------|	
+		|...
+		|------------|
+		| heap	     |	brk() <=128  -> mmap()
+		|malloc()..  |
+		|------------
+		| loadable   |<== loaded from executable
+		|	     |
+		|------------|
+		|------------|
+
+  
+ #include<sys/mman.h>
+
+ void *mmap(void *addr, size_t length, int prot, int flags,int fd, off_t offset);
+  
+ int munmap(void *addr, size_t length);
+
+ 
+#include<stdio.h>
+#include<sys/mman.h>
+
+int main(){
+
+int i,r,c=5;
+int *ptr = mmap(NULL,c*sizeof(int),PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,0,0);
+
+if(ptr == MAP_FAILED){
+        printf("mapping is failed\n");
+        return 1;
+}
+for(i=0;i<c;i++){
+        ptr[i]=i*10;
+}
+for(i=0;i<c;i++){
+        printf("%d\n",ptr[i]);
+}
+printf("\n");
+r=munmap(ptr,10*sizeof(int));
+if(r !=0){
+        printf("unmapping is failed\n");
+        return 2;
+}
+
+}
+
+======================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  
+ 
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              
