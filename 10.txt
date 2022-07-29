@@ -1,0 +1,662 @@
+ 
+ Linux - command 
+  |
+ Linux - shellscript
+  |
+ Linux - system program		
+  |
+ Linux - Multithread program
+  |
+ Linux - Internals - core kernel datastructures
+
+	+-----------------------------------+
+	| User Layer :
+	|
+	+-------------shell-----------------+
+	|
+	|	systemcalls()
+	|     ____________________________
+	|	FileSystem<-->PCB
+	|	|			<= core kernel DS 
+	|	Device Drivers
+	|	|
+        |     ____________________________
+	|	Device Controllers
+	|	|
+	+-----------------------------------+
+	|	H/W
+	+------------------------------------+
+
+ echo "Hello"   printf("Hello");
+ -------------------------------------
+	write(1,"Hello",..)
+	|
+	my_write_(1,"Hello")
+	|
+	printk(FLAG,"Hello")
+	|
+	asm push
+	    call
+	    ...
+        |
+	01010101
+
+ ===========================================================================
+ gcc -c p1.c 
+  |
+  p1.o
+ -------------
+ |
+ compilation 
+ |
+ p1.ko <== kernel object file - module
+ -----
+  |->2.6updated 
+ 
+ p1.ko
+ ------
+ load a module - insmod p1.ko
+ unload a module - rmmod p1.ko
+
+ LKM - Loadable Kernel Module
+ 
+ ->RHL7 updated .. while os loading time(booting time) - kernel modules are loaded.
+ 
+ grub2 - bootloader
+  |
+  /boot/grub2/grub.cfg<== shellscript
+		|
+		insmod <module>
+		..  
+ ------------------------
+ ->RHL[56] DEB[<16] -> /etc/sysconfig/modules/p1.modules
+			#!/bin/bash
+			insmod <module>
+			..
+			chmod a+x /etc/sysconfig/modules/p1.modules
+ ------------------------
+
+ cat /proc/filesystems
+
+
+ lsmod  - list of loaded kernel modules
+ <moduleName>	<moduleSize>	<no.ofprocess-used-this module> <dep-module>
+
+ modinfo <moduleName> - information about this module
+ -------
+ modinfo -n <modulename> - file path
+
+ insmod ./p3.ko
+ insmod ./p2.ko
+ insmod ./p1.ko		Vs	modeprobe p1
+
+  Vs
+ modeprobe -v p1 {enter}
+ insmod ./p3.ko
+ insmod ./p2.ko
+ insmod ./p1.ko
+
+ rmmod p1	Vs modeprobe -v p1
+		   rmmod p1
+		  
+ ------------------------------------------------------------------------
+  develop code 
+  |
+  compile it
+  |
+  load module
+  |
+  open device
+  |
+  read/write device
+  |
+  close device
+  |
+  remove module 
+
+
+
+  static int hello_init(){	(or)  static int __init hello_init(){}
+	printk();		
+	return 0;
+  }
+  static void hello_exit(){	(or)  static void __exit hello_exit(){}
+	printk();
+  }
+  module_init(hello_init);
+  module_exit(hello_exit);
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ Makefile - file - compilation 
+  |
+ make - used to build and maintain group of program from source code.
+
+ i.e., make command - invoke the execution of Makefile.
+
+ Makefile - list of shell commands
+ |
+ target - executable 
+
+ vi Makefile
+ <targetname>:
+ <pressTab>  command ( compilation )
+
+ root@krosumlabs:~# mkdir Temp
+root@krosumlabs:~# cd Temp
+root@krosumlabs:~/Temp# vi Makefile
+root@krosumlabs:~/Temp# cat Makefile 
+mytarget:
+	echo "Welcome to make file execution"
+root@krosumlabs:~/Temp# ls
+Makefile
+root@krosumlabs:~/Temp# 
+root@krosumlabs:~/Temp# make
+echo "Welcome to make file execution"
+Welcome to make file execution
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# make
+Welcome to make file execution
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# make
+Welcome to make file execution
+Welcome to make file execution
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# make
+Welcome to make file execution
+Welcome to make file execution
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# cat Makefile 
+mytarget:
+	@echo "Welcome to make file execution"
+	@echo "Welcome to make file execution"
+mynext_target:
+	@uname -rs
+	@hostname
+root@krosumlabs:~/Temp# 
+root@krosumlabs:~/Temp# make mynext_target
+Linux 3.0.0-12-generic
+krosumlabs
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# make
+Welcome to make file execution
+Welcome to make file execution
+Linux 3.0.0-12-generic
+krosumlabs
+root@krosumlabs:~/Temp# cat -n Makefile 
+     1	all: mytarget mynext_target
+     2	mytarget:
+     3		@echo "Welcome to make file execution"
+     4		@echo "Welcome to make file execution"
+     5	mynext_target:
+     6		@uname -rs
+     7		@hostname
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# cat >p1.c
+#include<stdio.h>
+int main(){
+	printf("Hello\n");
+	return 0;
+}
+root@krosumlabs:~/Temp# ls
+Makefile  p1.c
+root@krosumlabs:~/Temp# cat Makefile 
+all: mytarget mynext_target myhello myexe
+mytarget:
+	@echo "Welcome to make file execution"
+	@echo "Welcome to make file execution"
+mynext_target:
+	@uname -rs
+	@hostname
+myhello:
+	@gcc -c p1.c
+	@gcc -o p1 p1.o
+myexe:
+	@./p1
+root@krosumlabs:~/Temp# make
+Welcome to make file execution
+Welcome to make file execution
+Linux 3.0.0-12-generic
+krosumlabs
+Hello
+root@krosumlabs:~/Temp# ls
+Makefile  p1  p1.c  p1.o
+root@krosumlabs:~/Temp# make myexe
+Hello
+root@krosumlabs:~/Temp# make myhello
+root@krosumlabs:~/Temp# vi p1.c
+root@krosumlabs:~/Temp# make myhello
+root@krosumlabs:~/Temp# make myexe
+Hello
+Next sec
+root@krosumlabs:~/Temp# cat -n Makefile 
+     1	all: mytarget mynext_target myhello myexe
+     2	mytarget:
+     3		@echo "Welcome to make file execution"
+     4		@echo "Welcome to make file execution"
+     5	mynext_target:
+     6		@uname -rs
+     7		@hostname
+     8	myhello:
+     9		@gcc -c p1.c
+    10		@gcc -o p1 p1.o
+    11	myexe:
+    12		@./p1
+root@krosumlabs:~/Temp# vi Makefile 
+root@krosumlabs:~/Temp# make mytest
+Hello-1
+root@krosumlabs:~/Temp# cat -n Makefile 
+     1	myvar=mycode
+     2	all: mytarget mynext_target myhello myexe
+     3	mytarget:
+     4		@echo "Welcome to make file execution"
+     5		@echo "Welcome to make file execution"
+     6	mynext_target:
+     7		@uname -rs
+     8		@hostname
+     9	myhello:
+    10		@gcc -c p1.c
+    11		@gcc -o p1 p1.o
+    12	myexe:
+    13		@./p1
+    14	mycode:
+    15		@echo "Hello-1"
+    16	mytest: ${myvar}
+root@krosumlabs:~/Temp# 
+ 
+  all: 	  ./myobj
+  compile: gcc main.c f1.c f2.c f3.c -o myobj
+
+	(or)
+
+
+   all:
+	 ./myobj
+   myobj: 
+	 gcc main.o f1.o f2.o f3.o -o myobj
+   main.o:
+	gcc -c main.c 
+   f3.o:
+	gcc -c f3.c
+   f2.o:
+	gcc -c f2.c
+   f1.o: 
+	gcc -c f1.c 
+
+ later - update f2.c file 
+ vi f2.c 
+
+ int updated_api(){
+	..
+	..
+ }
+ :wq
+
+ make f2.o
+ make 
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ 
+ Application code (user level code) - create own file (act as Makefile)
+ 
+ ex: vi myfile{enter}
+
+ all: mytarget mycompile myrun
+
+ mytarget:
+	echo "Hello"
+ myrun:
+	./p1
+ mycompile:
+	gcc -o p1 p1.c 
+ 
+ :wq
+ make ->search Makefile 
+
+ make -f myfile
+ 
+-----------------------------------------------------------------------------
+
+  Build Kernel from scratch
+  ==========================
+  step 1: download the source code //kernel.org ->latest release
+	  
+  using wget utility we can download kernel file
+	----
+  wget https://kernel.org/...linu-5.x.tar.xz
+  
+  wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.18.14.tar.xz
+  
+
+  step 2: Extract the source code 
+
+  tar -xvf linux-5.18.14.tar.xz
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  tar -cvf <filename.tar> list of files
+       |
+      create a backup file
+  
+  tar -tvf <filename.tar> - list out files
+  
+  tar -xvf <filename.tar> - extract the file
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ 
+  step 3: install tool kits using packagemanager
+  
+  yum install git build-essential libssl-dev bc fakeroot bison {enter}
+  (or)
+  apt-get install git build-essential libssl-dev bc fakeroot bison {enter}
+
+ step 4: Configure Kernel 
+ --------------------------
+	|->inform to bootloader  => /boot/config-<kernel-Version> 
+		
+ cd linux-5.18.14
+ cp /boot/config-<kernel-version> .config
+
+ => execute menuconfiguration
+    make menuconfig
+
+ =>build the kernel
+   make 
+
+ => //install any packages -> make <targetName>
+
+ => finally install a kernel 
+    make install
+
+ -----------------------------------
+ reboot
+ |
+ uname -r => 5.18.14.. 
+ --------------------------------------------------------------
+  
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ 
+
+  static int hello_init(){	(or)  static int __init hello_init(){}
+	printk();		
+	return 0;
+  }
+  static void hello_exit(){	(or)  static void __exit hello_exit(){}
+	printk();
+  }
+  module_init(hello_init);
+  module_exit(hello_exit); 
+ 
+   
+
+ obj-m =
+       +=
+       :=
+       ::=
+ obj-m += file.o => build as a kernel module
+
+ make -C <directory>
+ 
+
+ objects = main.o f1.o f2.o
+ -------   
+ 
+
+ v1 = $(v2)
+ v2 = $(v3)
+ v3 = $(command2)
+  			
+ v1 := v2
+ v2 := $(v3) args
+
+
+
+ obj += file.o
+
+  |
+ obj = file1.o file2. file3.o
+ obj += file.o
+
+
+  
+ obj = file1.o file2. file3.o
+ obj := $(obj) file.o
+ 
+ dmesg <== syslog daemon
+	(or)
+ cat /var/log/syslog 
+ - see the printk() message
+
+ --------------------------------------------------------------------
+  /dev - device files
+
+ Major number - unique number which specifies a particular driver. 
+		helps kernel to identify the driver.
+ Minor number - every device in linux system provided a unique number which is caled
+		minor device number
+					
+			Device		minor		
+		|->/dev/device0		3
+  [ Driver ] ---|
+		|->/dev/device1		4
+   (major)      |		
+		|->/dev/device2		5
+  
+
+ user-requests
+ |
+ systemcall
+ |
+ FS
+ |
+ DD - what is major number?
+		|
+		|
+		DC
+		|
+		Device - minior 
+
+ #include<linux/types.h>
+
+ dev_t - 32 bit => 12 bits - major 
+		   20 bits - minor 
+
+ MAJOR(dev_t dev)
+ MINOR(dev_t dev)
+ -------------------//<linux/kdev_t.h>
+
+ |
+ ->passing major number in registration of driver
+   =============================================
+    register_chrdev(unsigned int major,const char *name,struct file_operations *fp)
+    -----------------
+	|->init function()
+ 
+ device driver - structure 
+=============================
+  develop code 
+  |
+  compile it
+  |
+  load module
+  |
+  open device
+  |
+  read/write device
+  |
+  close device
+  |
+  remove module 
+ 
+ -----
+ -> define the struct - capability of our device
+					  -------read/write
+
+  static struct file_operation fops={
+
+		r=dev_read,
+  		w=dev_write,
+		o=dev_open,
+		..
+		..
+ };
+
+ -->interrupt routine //support any h/w interrupt we need to defined interrupt routine.
+ 
+ irqreturn_t irq_handler(){
+	printk(......);
+	return IRQ_HANDLED;
+ }	
+	 
+ ---------------------------
+ file: test1.c
+
+ #include<linux/module.h>
+ ..
+ ..
+ ..
+ MODULE_LICENSE("GPL");
+ 
+ static int dev_open(struct inode *inode,struct file *fp);
+ static ssize_t dev_read(struct file *fp,buff,size_t len,off_t *ft);
+ static ssize_t dev_write(struct file *fp,buff,size_t len,off_t *ft);
+ ..
+ static int dev_release(struct inode *inode,struct file *fp);
+
+ static struct file_operation fp={
+		r=dev_read;
+		..
+		..
+ };
+ static init hello_init(void){ 
+	t=register_chrdev(<majorNumber,"mydevicename",&fp);
+	
+	if(t<0){
+		printk(KERN_ALERT "Device registration is failed");
+	}else{
+		printk(KERN_ALERT "Device registred\n");
+	}
+	return 0;
+ }
+
+ ..
+ static void hello_exit(){
+	unregister_chrdev(<mojorNumber>,"mydevicename");
+	printk(KERN_ALERT,"exit");
+ }
+
+ static int dev_open(struct inode *inod,struct file *fp){
+	printk("KERN_ALERT device opened");
+ }
+ ..
+ ..
+ module_init(hello_init);
+ module_exit(hellp_exit);
+ ----
+ 
+
+ 
+ ---
+ |
+ systemcalls
+ |
+ FS
+ |
+ DD - code 
+ |
+ ..		
+
+ fd=open("/dev/file",O_RDWR);
+ write(fd,"Hello",strlen(buff));
+ read(fd,rbuf,n);
+ printf("%s",rbuf);
+
+ ------------------------------------------------------------------------
+ dtrace -l -m <module> 
+ 
+ https://docs.oracle.com/cd/E37670_01/E37355/html/ol_examples_dtrace.html
+ -----------------------
+ |
+ symbol table 
+ key | value
+ ----|------
+ 	..
+ 
+ 
+ nm <objectfile>
+ nm <object> - list out symbols 
+------------------------------------------------------------------
+ gprof 
+
+ gcc -pg p1.c -o p1
+ 
+ ./p1
+
+ gmon.out <==
+ .....
+ gprof p1 gmon.out 
+
+ profile info 
+ ============
+ time secs	calls	s/call	total	<symbol>
+ 
+-----------------------------------------------------------------------
+  selinux
+  -------
+  enforcing 
+  permissive 
+  disabled 
+
+ -------->policy based 
+
+ ---------------------------------------------------------------
+ PAM
+ ----
+ |
+ auth 	ctrlflag	module(file.so)
+
+	requisite	action(or) execution
+	required 
+	sufficient
+---------------------------------------------------------------------------------
+
+ new linux
+ ----------
+ |->linux arch
+ |->commands - refer essentials.pdf
+ |
+ |->shellscript - command based // automation
+ --------------------------------------------------
+
+ C programming + linux
+ 
+ linux os - file system 	- systemcalls() + C =>gcc gdb gprof nm strace 
+	    process management  - systemcall() - fork() wait()
+	    memory management	- systemcall()
+  |
+  internals - struct name + attributes <= &sv => sv->sattr
+	       tasks_t 		
+		device_t	
+	       ----------------------	 // dtrace ; nm 
+		  +
+		Rules (ex: DD )
+  ---- make 		
+ ==============================================================================
+ 
+					
+   
+	    
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
